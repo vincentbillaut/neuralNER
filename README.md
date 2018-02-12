@@ -28,7 +28,18 @@ Today, the approach has shifted to Neural Nets and feature learning. The basic a
 
 We will implement and compare these different methods in order to try and reach conclusions on their respective relevance on given specific cases, which we will compare to results from [1].
 
-### Related Work
+### Evaluation Plan
+
+We will use the quantitative evaluation metric formalized in [4]: the $\textbf{F}_1$**-score** on the classification task. Furthermore, we will manually examine a subset of the misclassified instances in order to assess the relative relevance of the various techniques on distinct use cases.
+
+## Code overview
+
+Our code -- or at least the first iterations of it -- is very largely inspired from **Stanford's CS224N starter code for [Assignment 2](http://web.stanford.edu/class/cs224n/assignment2/index.html)**. The framework this repo provided seemed to us like a good base to build upon.  
+It basically features a set of objects that make the development of a clean `tensorflow` work environment easier.
+We made many adjustments to fit our own specifications but tried to be consistent with the way it was coded in the beginning.
+
+
+## Related Work
 
 > **[1]** Lample, Guillaume, et al. "Neural architectures for named entity recognition." *arXiv preprint arXiv:1603.01360* (2016).
 
@@ -45,11 +56,3 @@ We will implement and compare these different methods in order to try and reach 
 > **[4]** Tjong Kim Sang, Erik F., and Fien De Meulder. "Introduction to the CoNLL-2003 shared task: Language-independent named entity recognition." *Proceedings of the seventh conference on Natural language learning at HLT-NAACL 2003-Volume 4*. Association for Computational Linguistics, 2003.
 
 ​	This article describes very generally the task of named entity recognition, and provides a common dataset which has been used as a standard for NER ever since, and notably by the aforementioned articles.
-
-### Evaluation Plan
-
-We will use the quantitative evaluation metric formalized in [4]: the $\textbf{F}_1$**-score** on the classification task. Furthermore, we will manually examine a subset of the misclassified instances in order to assess the relative relevance of the various techniques on distinct use cases.
-
-## Code overview
-
-Our code -- or at least the first iterations of it -- is very largely inspired from Stanford's CS224N starter code for Homework 2. The framework this repo provided seemed to us like a good base to build upon. We made many adjustments to fit our own specifications but tried to be consistent with the way it was coded.
