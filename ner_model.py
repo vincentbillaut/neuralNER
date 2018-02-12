@@ -17,12 +17,12 @@ class Config(object):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    n_features = 36
-    n_classes = 3
+    # n_features = 36
+    n_classes = 17
     # dropout = 0.5  # (p_drop in the handout)
     embed_size = 50
     hidden_size = 200
-    # batch_size = 1024
+    batch_size = 1024
     # n_epochs = 10
     # lr = 0.0005
 
@@ -40,11 +40,12 @@ class ParserModel(Model):
         data during training.  Note that when "None" is in a placeholder's shape, it's flexible
         (so we can use different batch sizes without rebuilding the model).
 
-        input_placeholder: Input placeholder tensor of  shape (None, n_features), type tf.int32
+        input_placeholder: Input placeholder tensor of  shape (None, 1), type tf.int32
+            containing index of our word in the embedding
         labels_placeholder: Labels placeholder tensor of shape (None, n_classes), type tf.float32
         """
 
-        self.input_placeholder = tf.placeholder(tf.int32, (None, self.config.n_features))
+        self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
         self.labels_placeholder = tf.placeholder(tf.float32, (None, self.config.n_classes))
         # self.dropout_placeholder = tf.placeholder(tf.float32, ())
 
