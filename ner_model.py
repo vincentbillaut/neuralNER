@@ -1,13 +1,13 @@
-import cPickle
 import os
 import time
 import tensorflow as tf
 import numpy as np
 
 from model import Model
-from q2_initialization import xavier_weight_init
-from utils.parser_utils import minibatches, load_and_preprocess_data
-
+from utils.Embedder import Embedder
+from utils.minibatches import minibatches
+from utils.xavier_initialization import xavier_weight_init
+from utils.LabelsHandler import LabelsHandler
 
 class Config(object):
     """Holds model hyperparams and data information.
@@ -22,12 +22,12 @@ class Config(object):
     # dropout = 0.5  # (p_drop in the handout)
     embed_size = 50
     hidden_size = 200
-    batch_size = 1024
-    # n_epochs = 10
-    # lr = 0.0005
+    batch_size = 128
+    n_epochs = 10
+    lr = 0.0005
 
 
-class ParserModel(Model):
+class NERModel(Model):
     """
     Implements a feedforward neural network with an embedding layer and single hidden layer.
     This network will predict whether an input word is a Named Entity
@@ -50,7 +50,7 @@ class ParserModel(Model):
         # self.dropout_placeholder = tf.placeholder(tf.float32, ())
 
 
-    def create_feed_dict(self, inputs, labels=None):
+    def create_feed_dict(self, inputs, labels_batch=None):
         """Creates the feed_dict for the dependency parser.
 
         A feed_dict takes the form of:
@@ -71,7 +71,7 @@ class ParserModel(Model):
             self.input_placeholder: inputs
         }
         if labels_batch is not None:
-            feed_dict[self.labels_placeholder] = labels
+            feed_dict[self.labels_placeholder] = labels_batch
 
         return feed_dict
 
@@ -124,15 +124,15 @@ class ParserModel(Model):
         ### YOUR CODE HERE
 
         init = xavier_weight_init()
-        W = init((self.config.n_features*self.config.embed_size, self.config.hidden_size))
+        W = init((self.config.embed_size, self.config.hidden_size))
         U = init((self.config.hidden_size, self.config.n_classes))
 
         b1 = tf.Variable(tf.zeros((1,self.config.hidden_size)))
         b2 = tf.Variable(tf.zeros((1,self.config.n_classes)))
 
         h = tf.nn.relu(tf.matmul(x, W) + b1)
-        h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
-        pred = tf.matmul(h_drop, U) + b2
+        # h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
+        pred = tf.matmul(h, U) + b2
         ### END YOUR CODE
         return pred
 
@@ -185,34 +185,42 @@ class ParserModel(Model):
         return train_op
 
     def train_on_batch(self, sess, inputs_batch, labels_batch):
-        feed = self.create_feed_dict(inputs_batch, labels_batch=labels_batch,
-                                     dropout=self.config.dropout)
+        feed = self.create_feed_dict(inputs_batch.reshape(-1, 1), labels_batch=labels_batch)
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
         return loss
 
-    def run_epoch(self, sess, parser, train_examples, dev_set):
+    def test_on_batch(self, sess, inputs_batch, labels_batch):
+        feed = self.create_feed_dict(inputs_batch.reshape(-1, 1), labels_batch=labels_batch)
+        loss = sess.run([self.loss], feed_dict=feed)
+        return loss
+
+    def run_epoch(self, sess, train_examples, dev_set):
         n_minibatches = 1 + len(train_examples) / self.config.batch_size
         prog = tf.keras.utils.Progbar(target=n_minibatches)
         for i, (train_x, train_y) in enumerate(minibatches(train_examples, self.config.batch_size)):
             loss = self.train_on_batch(sess, train_x, train_y)
             prog.update(i + 1, [("train loss", loss)], force=i + 1 == n_minibatches)
 
-        print "Evaluating on dev set",
-        dev_UAS, _ = parser.parse(dev_set)
-        print "- dev UAS: {:.2f}".format(dev_UAS * 100.0)
-        return dev_UAS
+        for batch in minibatches(dev_set, dev_set.shape[0]):
+            break
+        loss = self.test_on_batch(sess, *batch)
+        # print("Evaluating on dev set", end=' ')
+        # dev_UAS, _ = parser.parse(dev_set)
+        # print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
+        # return dev_UAS
+        return - loss[0]
 
-    def fit(self, sess, saver, parser, train_examples, dev_set):
+    def fit(self, sess, saver, train_examples, dev_set):
         best_dev_UAS = 0
         for epoch in range(self.config.n_epochs):
-            print "Epoch {:} out of {:}".format(epoch + 1, self.config.n_epochs)
-            dev_UAS = self.run_epoch(sess, parser, train_examples, dev_set)
+            print("Epoch {:} out of {:}".format(epoch + 1, self.config.n_epochs))
+            dev_UAS = self.run_epoch(sess, train_examples, dev_set)
             if dev_UAS > best_dev_UAS:
                 best_dev_UAS = dev_UAS
                 if saver:
-                    print "New best dev UAS! Saving model in ./data/weights/parser.weights"
+                    print("New best dev UAS! Saving model in ./data/weights/parser.weights")
                     saver.save(sess, './data/weights/parser.weights')
-            print
+            print()
 
     def __init__(self, config, pretrained_embeddings):
         self.pretrained_embeddings = pretrained_embeddings
@@ -221,48 +229,53 @@ class ParserModel(Model):
 
 
 def main(debug=True):
-    print 80 * "="
-    print "INITIALIZING"
-    print 80 * "="
+    print(80 * "=")
+    print("INITIALIZING")
+    print(80 * "=")
     config = Config()
     # parser, embeddings, train_examples, dev_set, test_set = load_and_preprocess_data(debug)
-    embeddings = load_and_preprocess_data(debug)
+    embedder = Embedder()
+    embeddings, tok2idMap, train_set = embedder.load_and_preprocess_data(debug)
+
+    labels_handler = LabelsHandler()
+    train_set[:, 1] = labels_handler.to_label_ids(train_set[:, 1])
+
     if not os.path.exists('./data/weights/'):
         os.makedirs('./data/weights/')
 
     with tf.Graph().as_default() as graph:
-        print "Building model...",
+        print("Building model...", end=' ')
         start = time.time()
-        model = ParserModel(config, embeddings)
-        parser.model = model
+        model = NERModel(config, embeddings)
+        # parser.model = model
         init_op = tf.global_variables_initializer()
         saver = None if debug else tf.train.Saver()
-        print "took {:.2f} seconds\n".format(time.time() - start)
+        print("took {:.2f} seconds\n".format(time.time() - start))
     graph.finalize()
 
     with tf.Session(graph=graph) as session:
-        parser.session = session
+        # parser.session = session
         session.run(init_op)
 
-        print 80 * "="
-        print "TRAINING"
-        print 80 * "="
-        model.fit(session, saver, parser, train_examples, dev_set)
+        print(80 * "=")
+        print("TRAINING")
+        print(80 * "=")
+        model.fit(session, saver, train_set, train_set) # TODO dev set
 
         if not debug:
-            print 80 * "="
-            print "TESTING"
-            print 80 * "="
-            print "Restoring the best model weights found on the dev set"
+            print(80 * "=")
+            print("TESTING")
+            print(80 * "=")
+            print("Restoring the best model weights found on the dev set")
             saver.restore(session, './data/weights/parser.weights')
-            print "Final evaluation on test set",
+            print("Final evaluation on test set", end=' ')
             UAS, dependencies = parser.parse(test_set)
-            print "- test UAS: {:.2f}".format(UAS * 100.0)
-            print "Writing predictions"
+            print("- test UAS: {:.2f}".format(UAS * 100.0))
+            print("Writing predictions")
             with open('q2_test.predicted.pkl', 'w') as f:
                 cPickle.dump(dependencies, f, -1)
-            print "Done!"
+            print("Done!")
 
 
 if __name__ == '__main__':
-    main(debug=False)
+    main(debug=True)
