@@ -92,11 +92,11 @@ class ParserModel(Model):
         Returns:
             embeddings: tf.Tensor of shape (None, n_features*embed_size)
         """
-        ### YOUR CODE HERE
+
         init_embed = tf.Variable(initial_value=self.pretrained_embeddings)
         embeddings0 = tf.nn.embedding_lookup(params=init_embed,ids=self.input_placeholder)
-        embeddings = tf.reshape(tensor=embeddings0,shape=[-1, self.config.n_features*self.config.embed_size])
-        ### END YOUR CODE
+        embeddings = tf.reshape(tensor=embeddings0,shape=[-1, 1*self.config.embed_size])
+
         return embeddings
 
     def add_prediction_op(self):
@@ -225,7 +225,8 @@ def main(debug=True):
     print "INITIALIZING"
     print 80 * "="
     config = Config()
-    parser, embeddings, train_examples, dev_set, test_set = load_and_preprocess_data(debug)
+    # parser, embeddings, train_examples, dev_set, test_set = load_and_preprocess_data(debug)
+    embeddings = load_and_preprocess_data(debug)
     if not os.path.exists('./data/weights/'):
         os.makedirs('./data/weights/')
 
