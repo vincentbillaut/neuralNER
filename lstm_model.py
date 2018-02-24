@@ -17,7 +17,6 @@ class LSTMConfig(object):
     """
     # n_features = 36
     n_classes = 17
-    dropout = 0.5
     embed_size = 50
     hidden_size = 200
     batch_size = 128
@@ -42,7 +41,6 @@ class LSTMModel(NERModel):
         self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
         self.labels_placeholder = tf.placeholder(
             tf.float32, (None, self.config.n_classes))
-        self.dropout_placeholder = tf.placeholder(tf.float32)
 
     def create_feed_dict(self, inputs, labels_batch=None, dropout=0):
         """Creates the feed_dict for the dependency parser.
@@ -56,8 +54,7 @@ class LSTMModel(NERModel):
         """
 
         feed_dict = {
-            self.input_placeholder: inputs,
-            self.dropout_placeholder: dropout
+            self.input_placeholder: inputs
         }
         if labels_batch is not None:
             feed_dict[self.labels_placeholder] = labels_batch

@@ -92,14 +92,10 @@ class NaiveModel(NERModel):
 
         x = self.add_embedding()
 
-        W = tf.get_variable("W",
-                            shape=[self.config.embed_size,
-                                   self.config.hidden_size],
-                            initializer=tf.contrib.layers.xavier_initializer())
-        U = tf.get_variable("U",
-                            shape=[self.config.hidden_size,
-                                   self.config.n_classes],
-                            initializer=tf.contrib.layers.xavier_initializer())
+        init = tf.contrib.layers.xavier_initializer()
+
+        W = tf.Variable(init(shape=[self.config.embed_size, self.config.hidden_size]))
+        U = tf.Variable(init(shape=[self.config.hidden_size, self.config.n_classes]))
 
         b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1")
         b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2")
@@ -122,7 +118,7 @@ class NaiveModel(NERModel):
             loss: A 0-d tensor (scalar)
         """
 
-        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
+        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
             labels=self.labels_placeholder,
             logits=pred
         )

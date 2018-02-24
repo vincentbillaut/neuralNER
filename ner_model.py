@@ -38,7 +38,8 @@ class NERModel(Model):
         Returns:
             A new list of vectorized input/output pairs appropriate for the model.
         """
-        raise NotImplementedError("Each Model must re-implement this method.")
+        print("Each Model must re-implement this method?")
+        return examples
 
     def train_on_batch(self, sess, inputs_batch, labels_batch):
         feed = self.create_feed_dict(inputs_batch.reshape(-1, 1), labels_batch=labels_batch)
@@ -108,4 +109,3 @@ class NERModel(Model):
         self.pretrained_embeddings = pretrained_embeddings
         self.config = config
         self.build()
-
