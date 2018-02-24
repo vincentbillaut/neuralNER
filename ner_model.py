@@ -6,6 +6,7 @@ from utils.minibatches import minibatches
 from utils.Progbar import Progbar
 from utils.LabelsHandler import LabelsHandler
 from utils.ConfusionMatrix import ConfusionMatrix
+from utils.parser_utils import get_chunks
 
 logger = logging.getLogger("NERproject")
 logger.setLevel(logging.DEBUG)
@@ -108,7 +109,6 @@ class NERModel(object):
         self.loss = self.add_loss_op(self.pred)
         self.train_op = self.add_training_op(self.loss)
 
-
     def preprocess_sequence_data(self, examples):
         """Preprocess sequence data for the model.
 
@@ -187,6 +187,23 @@ class NERModel(object):
         r = correct_preds / total_correct if correct_preds > 0 else 0
         f1 = 2 * p * r / (p + r) if correct_preds > 0 else 0
         return token_cm, (p, r, f1)
+
+    def output(self, sess, inputs_raw, inputs=None):
+        """
+        Reports the output of the model on examples (uses helper to featurize each example).
+        """
+        if inputs is None:
+            inputs = self.preprocess_sequence_data(self.helper.vectorize(inputs_raw))
+
+        preds = []
+        prog = Progbar(target=1 + int(len(inputs) / self.config.batch_size))
+        for i, batch in enumerate(minibatches(inputs, self.config.batch_size, shuffle=False)):
+            # Ignore predict
+            batch = batch[:1] + batch[2:]
+            preds_ = self.predict_on_batch(sess, *batch)
+            preds += list(preds_)
+            prog.update(i + 1, [])
+        return self.consolidate_predictions(inputs_raw, inputs, preds)
 
     def fit(self, sess, saver, train_examples_raw, dev_set_raw):
         best_score = 0.

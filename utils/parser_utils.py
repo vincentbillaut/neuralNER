@@ -9,7 +9,6 @@ from collections import Counter
 
 import numpy as np
 
-
 P_PREFIX = '<p>:'
 L_PREFIX = '<l>:'
 UNK = '<UNK>'
@@ -37,7 +36,7 @@ class Parser(object):
 
     def __init__(self, dataset):
         root_labels = list([l for ex in dataset
-                           for (h, l) in zip(ex['head'], ex['label']) if h == 0])
+                            for (h, l) in zip(ex['head'], ex['label']) if h == 0])
         counter = Counter(root_labels)
         if len(counter) > 1:
             logging.info('Warning: more than one root label')
@@ -69,14 +68,14 @@ class Parser(object):
 
         # logging.info('Build dictionary for part-of-speech tags.')
         tok2id.update(build_dict([P_PREFIX + w for ex in dataset for w in ex['pos']],
-                                  offset=len(tok2id)))
+                                 offset=len(tok2id)))
         tok2id[P_PREFIX + UNK] = self.P_UNK = len(tok2id)
         tok2id[P_PREFIX + NULL] = self.P_NULL = len(tok2id)
         tok2id[P_PREFIX + ROOT] = self.P_ROOT = len(tok2id)
 
         # logging.info('Build dictionary for words.')
         tok2id.update(build_dict([w for ex in dataset for w in ex['word']],
-                                  offset=len(tok2id)))
+                                 offset=len(tok2id)))
         tok2id[UNK] = self.UNK = len(tok2id)
         tok2id[NULL] = self.NULL = len(tok2id)
         tok2id[ROOT] = self.ROOT = len(tok2id)
@@ -122,7 +121,7 @@ class Parser(object):
 
         for i in range(2):
             if i < len(stack):
-                k = stack[-i-1]
+                k = stack[-i - 1]
                 lc = get_lc(k)
                 rc = get_rc(k)
                 llc = get_lc(lc[0]) if len(lc) > 0 else []
@@ -176,7 +175,7 @@ class Parser(object):
             if (i1 > 0) and (h1 == i0):
                 return 0
             elif (i1 >= 0) and (h0 == i1) and \
-                 (not any([x for x in buf if ex['head'][x] == i0])):
+                    (not any([x for x in buf if ex['head'][x] == i0])):
                 return 1
             else:
                 return None if len(buf) == 0 else 2
@@ -184,7 +183,7 @@ class Parser(object):
             if (i1 > 0) and (h1 == i0):
                 return l1 if (l1 >= 0) and (l1 < self.n_deprel) else None
             elif (i1 >= 0) and (h0 == i1) and \
-                 (not any([x for x in buf if ex['head'][x] == i0])):
+                    (not any([x for x in buf if ex['head'][x] == i0])):
                 return l0 + self.n_deprel if (l0 >= 0) and (l0 < self.n_deprel) else None
             else:
                 return None if len(buf) == 0 else self.n_trans - 1
@@ -248,11 +247,11 @@ class Parser(object):
                 head[t] = h
             for pred_h, gold_h, gold_l, pos in \
                     zip(head[1:], ex['head'][1:], ex['label'][1:], ex['pos'][1:]):
-                    assert self.id2tok[pos].startswith(P_PREFIX)
-                    pos_str = self.id2tok[pos][len(P_PREFIX):]
-                    if (self.with_punct) or (not punct(self.language, pos_str)):
-                        UAS += 1 if pred_h == gold_h else 0
-                        all_tokens += 1
+                assert self.id2tok[pos].startswith(P_PREFIX)
+                pos_str = self.id2tok[pos][len(P_PREFIX):]
+                if (self.with_punct) or (not punct(self.language, pos_str)):
+                    UAS += 1 if pred_h == gold_h else 0
+                    all_tokens += 1
         UAS /= all_tokens
         return UAS, dependencies
 
@@ -387,5 +386,30 @@ def load_and_preprocess_data(reduced=True):
 
     return parser, embeddings_matrix, train_examples, dev_set, test_set,
 
-if __name__ == '__main__':
-    pass
+
+def get_chunks(seq, default=LBLS.index(NONE)):
+    """Breaks input of 4 4 4 0 0 4 0 ->   (0, 4, 5), (0, 6, 7)"""
+    chunks = []
+    chunk_type, chunk_start = None, None
+    for i, tok in enumerate(seq):
+        # End of a chunk 1
+        if tok == default and chunk_type is not None:
+            # Add a chunk.
+            chunk = (chunk_type, chunk_start, i)
+            chunks.append(chunk)
+            chunk_type, chunk_start = None, None
+        # End of a chunk + start of a chunk!
+        elif tok != default:
+            if chunk_type is None:
+                chunk_type, chunk_start = tok, i
+            elif tok != chunk_type:
+                chunk = (chunk_type, chunk_start, i)
+                chunks.append(chunk)
+                chunk_type, chunk_start = tok, i
+        else:
+            pass
+    # end condition
+    if chunk_type is not None:
+        chunk = (chunk_type, chunk_start, len(seq))
+        chunks.append(chunk)
+    return chunks
