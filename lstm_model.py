@@ -37,16 +37,19 @@ class LSTMModel(NERModel):
             containing index of our word in the embedding
         labels_placeholder: Labels placeholder tensor of shape (None, n_classes), type tf.float32
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
+        mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
         """
         self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
         self.labels_placeholder = tf.placeholder(
             tf.float32, (None, self.config.n_classes))
+        self.mask_placeholder = tf.placeholder(tf.bool, [None, self.max_length])
 
-    def create_feed_dict(self, inputs, labels_batch=None, dropout=0):
+    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
         """Creates the feed_dict for the dependency parser.
 
         Args:
             inputs_batch: A batch of input data.
+            mask_batch:   A batch of mask data.
             labels_batch: A batch of label data.
             dropout: Dropout rate.
         Returns:
@@ -54,7 +57,8 @@ class LSTMModel(NERModel):
         """
 
         feed_dict = {
-            self.input_placeholder: inputs
+            self.input_placeholder: inputs,
+            self.mask_placeholder: mask_batch
         }
         if labels_batch is not None:
             feed_dict[self.labels_placeholder] = labels_batch
@@ -88,22 +92,16 @@ class LSTMModel(NERModel):
         """
 
         x = self.add_embedding()
+        cell = tf.rnn.LSTMCell()
+        preds = []
 
-        W = tf.get_variable("W",
-                            shape=[self.config.embed_size,
-                                   self.config.hidden_size],
-                            intializer=tf.contrib.layers.xavier_initializer())
-        U = tf.get_variable("U",
-                            shape=[self.config.hidden_size,
-                                   self.config.n_classes],
-                            intializer=tf.contrib.layers.xavier_initializer())
+        hidden_state = tf.constant(tf.zeros(self.config.hidden_size))
 
-        b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1")
-        b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2")
+        for t in range(self.config.pad_length):
+            output, hidden_state = cell(self.input_placeholder, hidden_state)
+            preds.append(output)
 
-        h = tf.nn.relu(tf.matmul(x, W) + b1)
-        h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
-        pred = tf.matmul(h, U) + b2
+        pred = tf.stack(preds)
 
         return pred
 
@@ -119,10 +117,13 @@ class LSTMModel(NERModel):
             loss: A 0-d tensor (scalar)
         """
 
-        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
-            labels=self.labels_placeholder,
-            logits=pred
-        )
+        cross_entropy = tf.boolean_mask(
+                tf.nn.sparse_softmax_cross_entropy_with_logits(
+                    labels=self.labels_placeholder,
+                    logits=pred
+                ),
+                self.mask_placeholder
+            )
         loss = tf.reduce_mean(cross_entropy)
 
         return loss
