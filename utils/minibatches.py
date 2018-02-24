@@ -1,6 +1,12 @@
-import sys
-import time
 import numpy as np
+
+
+def minibatches(data, batch_size):
+    x = np.array([d[0] for d in data])
+    y = np.array([d[1] for d in data])
+    one_hot = np.zeros((y.size, 17))
+    one_hot[np.arange(y.size), y] = 1
+    return get_minibatches([x, one_hot], batch_size)
 
 
 def get_minibatches(data, minibatch_size, shuffle=True):
@@ -52,4 +58,4 @@ def test_all_close(name, actual, expected):
     if np.amax(np.fabs(actual - expected)) > 1e-6:
         raise ValueError("{:} failed, expected {:} but value is {:}".format(name, expected, actual))
     else:
-        print name, "passed!"
+        print(name, "passed!")
