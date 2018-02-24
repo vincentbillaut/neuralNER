@@ -1,13 +1,18 @@
 import os
 import time
+import logging
+
 import tensorflow as tf
-import numpy as np
 
 from model import Model
 from utils.Embedder import Embedder
-from utils.minibatches import minibatches
-from utils.xavier_initialization import xavier_weight_init
 from utils.LabelsHandler import LabelsHandler
+from utils.minibatches import minibatches
+
+logger = logging.getLogger("hw3")
+logger.setLevel(logging.DEBUG)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
 
 class Config(object):
     """Holds model hyperparams and data information.
@@ -17,14 +22,6 @@ class Config(object):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    # n_features = 36
-    n_classes = 17
-    # dropout = 0.5  # (p_drop in the handout)
-    embed_size = 50
-    hidden_size = 200
-    batch_size = 128
-    n_epochs = 10
-    lr = 0.0005
 
 
 class NERModel(Model):
@@ -33,156 +30,15 @@ class NERModel(Model):
     This network will predict whether an input word is a Named Entity
     """
 
-    def add_placeholders(self):
-        """Generates placeholder variables to represent the input tensors
-
-        These placeholders are used as inputs by the rest of the model building and will be fed
-        data during training.  Note that when "None" is in a placeholder's shape, it's flexible
-        (so we can use different batch sizes without rebuilding the model).
-
-        input_placeholder: Input placeholder tensor of  shape (None, 1), type tf.int32
-            containing index of our word in the embedding
-        labels_placeholder: Labels placeholder tensor of shape (None, n_classes), type tf.float32
-        """
-
-        self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
-        self.labels_placeholder = tf.placeholder(tf.float32, (None, self.config.n_classes))
-        # self.dropout_placeholder = tf.placeholder(tf.float32, ())
-
-
-    def create_feed_dict(self, inputs, labels_batch=None):
-        """Creates the feed_dict for the dependency parser.
-
-        A feed_dict takes the form of:
-
-        feed_dict = {
-                <placeholder>: <tensor of values to be passed for placeholder>,
-                ....
-        }
+    def preprocess_sequence_data(self, examples):
+        """Preprocess sequence data for the model.
 
         Args:
-            inputs_batch: A batch of input data.
-            labels_batch: A batch of label data.
+            examples: A list of vectorized input/output sequences.
         Returns:
-            feed_dict: The feed dictionary mapping from placeholders to values.
+            A new list of vectorized input/output pairs appropriate for the model.
         """
-
-        feed_dict = {
-            self.input_placeholder: inputs
-        }
-        if labels_batch is not None:
-            feed_dict[self.labels_placeholder] = labels_batch
-
-        return feed_dict
-
-    def add_embedding(self):
-        """Adds an embedding layer that maps from input tokens (integers) to vectors and then
-        concatenates those vectors:
-            - Creates a tf.Variable and initializes it with self.pretrained_embeddings.
-            - Uses the input_placeholder to index into the embeddings tensor, resulting in a
-              tensor of shape (None, n_features, embedding_size).
-            - Concatenates the embeddings by reshaping the embeddings tensor to shape
-              (None, n_features * embedding_size).
-
-        Hint: You might find tf.nn.embedding_lookup useful.
-        Hint: You can use tf.reshape to concatenate the vectors. See following link to understand
-            what -1 in a shape means.
-            https://www.tensorflow.org/api_docs/python/tf/reshape
-
-        Returns:
-            embeddings: tf.Tensor of shape (None, n_features*embed_size)
-        """
-
-        init_embed = tf.Variable(initial_value=self.pretrained_embeddings)
-        embeddings0 = tf.nn.embedding_lookup(params=init_embed,ids=self.input_placeholder)
-        embeddings = tf.reshape(tensor=embeddings0,shape=[-1, 1*self.config.embed_size])
-
-        return embeddings
-
-    def add_prediction_op(self):
-        """Adds the 1-hidden-layer NN:
-            h = Relu(xW + b1)
-            h_drop = Dropout(h, dropout_rate)
-            pred = h_dropU + b2
-
-        Note that we are not applying a softmax to pred. The softmax will instead be done in
-        the add_loss_op function, which improves efficiency because we can use
-        tf.nn.softmax_cross_entropy_with_logits
-
-        Use the initializer from q2_initialization.py to initialize W and U (you can initialize b1
-        and b2 with zeros)
-
-        Hint: Note that tf.nn.dropout takes the keep probability (1 - p_drop) as an argument.
-              Therefore the keep probability should be set to the value of
-              (1 - self.dropout_placeholder)
-
-        Returns:
-            pred: tf.Tensor of shape (batch_size, n_classes)
-        """
-
-        x = self.add_embedding()
-        ### YOUR CODE HERE
-
-        init = xavier_weight_init()
-        W = init((self.config.embed_size, self.config.hidden_size))
-        U = init((self.config.hidden_size, self.config.n_classes))
-
-        b1 = tf.Variable(tf.zeros((1,self.config.hidden_size)))
-        b2 = tf.Variable(tf.zeros((1,self.config.n_classes)))
-
-        h = tf.nn.relu(tf.matmul(x, W) + b1)
-        # h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
-        pred = tf.matmul(h, U) + b2
-        ### END YOUR CODE
-        return pred
-
-    def add_loss_op(self, pred):
-        """Adds Ops for the loss function to the computational graph.
-        In this case we are using cross entropy loss.
-        The loss should be averaged over all examples in the current minibatch.
-
-        Hint: You can use tf.nn.softmax_cross_entropy_with_logits to simplify your
-                    implementation. You might find tf.reduce_mean useful.
-        Args:
-            pred: A tensor of shape (batch_size, n_classes) containing the output of the neural
-                  network before the softmax layer.
-        Returns:
-            loss: A 0-d tensor (scalar)
-        """
-        ### YOUR CODE HERE
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
-            labels=self.labels_placeholder,
-            logits=pred
-        )
-        loss = tf.reduce_mean(cross_entropy)
-        ### END YOUR CODE
-        return loss
-
-    def add_training_op(self, loss):
-        """Sets up the training Ops.
-
-        Creates an optimizer and applies the gradients to all trainable variables.
-        The Op returned by this function is what must be passed to the
-        `sess.run()` call to cause the model to train. See
-
-        https://www.tensorflow.org/api_docs/python/tf/train/Optimizer
-
-        for more information.
-
-        Use tf.train.AdamOptimizer for this model.
-        Use the learning rate from self.config.
-        Calling optimizer.minimize() will return a train_op object.
-
-        Args:
-            loss: Loss tensor, from cross_entropy_loss.
-        Returns:
-            train_op: The Op for training.
-        """
-        ### YOUR CODE HERE
-        opt = tf.train.AdamOptimizer(learning_rate=self.config.lr)
-        train_op = opt.minimize(loss)
-        ### END YOUR CODE
-        return train_op
+        raise NotImplementedError("Each Model must re-implement this method.")
 
     def train_on_batch(self, sess, inputs_batch, labels_batch):
         feed = self.create_feed_dict(inputs_batch.reshape(-1, 1), labels_batch=labels_batch)
@@ -204,78 +60,52 @@ class NERModel(Model):
         for batch in minibatches(dev_set, dev_set.shape[0]):
             break
         loss = self.test_on_batch(sess, *batch)
-        # print("Evaluating on dev set", end=' ')
-        # dev_UAS, _ = parser.parse(dev_set)
-        # print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
-        # return dev_UAS
+        print("Evaluating on dev set", end=' ')
+        dev_UAS, _ = parser.parse(dev_set)
+        print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
+        return dev_UAS
         return - loss[0]
 
-    def fit(self, sess, saver, train_examples, dev_set):
-        best_dev_UAS = 0
+    def fit(self, sess, saver, train_examples_raw, dev_set_raw):
+        best_score = 0.
+
+        train_examples = self.preprocess_sequence_data(train_examples_raw)
+        dev_set = self.preprocess_sequence_data(dev_set_raw)
+
         for epoch in range(self.config.n_epochs):
-            print("Epoch {:} out of {:}".format(epoch + 1, self.config.n_epochs))
-            dev_UAS = self.run_epoch(sess, train_examples, dev_set)
-            if dev_UAS > best_dev_UAS:
-                best_dev_UAS = dev_UAS
+            logger.info("Epoch %d out of %d", epoch + 1, self.config.n_epochs)
+            # You may use the progress bar to monitor the training progress
+            # Addition of progress bar will not be graded, but may help when debugging
+            prog = Progbar(target=1 + int(len(train_examples) / self.config.batch_size))
+
+            # The general idea is to loop over minibatches from train_examples, and run train_on_batch inside the loop
+            # Hint: train_examples could be a list containing the feature data and label data
+            # Read the doc for utils.get_minibatches to find out how to use it.
+            # Note that get_minibatches could either return a list, or a list of list
+            # [features, labels]. This makes expanding tuples into arguments (* operator) handy
+
+            for i, minibatch in enumerate(minibatches(train_examples, self.config.batch_size)):
+                loss = self.train_on_batch(sess, *minibatch)
+                prog.update(i + 1, [("loss = ", loss)])
+
+            logger.info("Evaluating on development data")
+            token_cm, entity_scores = self.evaluate(sess, dev_set, dev_set_raw)
+            logger.debug("Token-level confusion matrix:\n" + token_cm.as_table())
+            logger.debug("Token-level scores:\n" + token_cm.summary())
+            logger.info("Entity level P/R/F1: %.2f/%.2f/%.2f", *entity_scores)
+
+            score = entity_scores[-1]
+
+            if score > best_score:
+                best_score = score
                 if saver:
-                    print("New best dev UAS! Saving model in ./data/weights/parser.weights")
-                    saver.save(sess, './data/weights/parser.weights')
-            print()
+                    logger.info("New best score! Saving model in %s", self.config.model_output)
+                    saver.save(sess, self.config.model_output)
+            print("")
+        return best_score
 
     def __init__(self, config, pretrained_embeddings):
         self.pretrained_embeddings = pretrained_embeddings
         self.config = config
         self.build()
 
-
-def main(debug=True):
-    print(80 * "=")
-    print("INITIALIZING")
-    print(80 * "=")
-    config = Config()
-    # parser, embeddings, train_examples, dev_set, test_set = load_and_preprocess_data(debug)
-    embedder = Embedder()
-    embeddings, tok2idMap, train_set = embedder.load_and_preprocess_data(debug)
-
-    labels_handler = LabelsHandler()
-    train_set[:, 1] = labels_handler.to_label_ids(train_set[:, 1])
-
-    if not os.path.exists('./data/weights/'):
-        os.makedirs('./data/weights/')
-
-    with tf.Graph().as_default() as graph:
-        print("Building model...", end=' ')
-        start = time.time()
-        model = NERModel(config, embeddings)
-        # parser.model = model
-        init_op = tf.global_variables_initializer()
-        saver = None if debug else tf.train.Saver()
-        print("took {:.2f} seconds\n".format(time.time() - start))
-    graph.finalize()
-
-    with tf.Session(graph=graph) as session:
-        # parser.session = session
-        session.run(init_op)
-
-        print(80 * "=")
-        print("TRAINING")
-        print(80 * "=")
-        model.fit(session, saver, train_set, train_set) # TODO dev set
-
-        if not debug:
-            print(80 * "=")
-            print("TESTING")
-            print(80 * "=")
-            print("Restoring the best model weights found on the dev set")
-            saver.restore(session, './data/weights/parser.weights')
-            print("Final evaluation on test set", end=' ')
-            UAS, dependencies = parser.parse(test_set)
-            print("- test UAS: {:.2f}".format(UAS * 100.0))
-            print("Writing predictions")
-            with open('q2_test.predicted.pkl', 'w') as f:
-                cPickle.dump(dependencies, f, -1)
-            print("Done!")
-
-
-if __name__ == '__main__':
-    main(debug=True)
