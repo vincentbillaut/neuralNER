@@ -15,6 +15,7 @@ UNK = '<UNK>'
 NULL = '<NULL>'
 ROOT = '<ROOT>'
 
+
 class Config(object):
     language = 'english'
     with_punct = True
