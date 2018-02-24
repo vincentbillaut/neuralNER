@@ -95,18 +95,18 @@ class NaiveModel(NERModel):
         W = tf.get_variable("W",
                             shape=[self.config.embed_size,
                                    self.config.hidden_size],
-                            intializer=tf.contrib.layers.xavier_initializer())
+                            initializer=tf.contrib.layers.xavier_initializer())
         U = tf.get_variable("U",
                             shape=[self.config.hidden_size,
                                    self.config.n_classes],
-                            intializer=tf.contrib.layers.xavier_initializer())
+                            initializer=tf.contrib.layers.xavier_initializer())
 
         b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1")
         b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2")
 
         h = tf.nn.relu(tf.matmul(x, W) + b1)
         h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
-        pred = tf.matmul(h, U) + b2
+        pred = tf.matmul(h_drop, U) + b2
 
         return pred
 
@@ -148,8 +148,8 @@ class NaiveModel(NERModel):
 
         return train_op
 
-
     def __init__(self, config, pretrained_embeddings):
+        super().__init__(config, pretrained_embeddings)
         self.pretrained_embeddings = pretrained_embeddings
         self.config = config
         self.build()

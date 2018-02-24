@@ -3,16 +3,17 @@ import time
 
 import tensorflow as tf
 
-from ner_model import NERModel, Config
 from utils.Embedder import Embedder
 from utils.LabelsHandler import LabelsHandler
+
+from naive_model import NaiveConfig, NaiveModel
 
 
 def main(debug=True):
     print(80 * "=")
     print("INITIALIZING")
     print(80 * "=")
-    config = Config()
+    config = NaiveConfig()
     # parser, embeddings, train_examples, dev_set, test_set = load_and_preprocess_data(debug)
     embedder = Embedder()
     embeddings, tok2idMap, train_set = embedder.load_and_preprocess_data(debug)
@@ -26,7 +27,7 @@ def main(debug=True):
     with tf.Graph().as_default() as graph:
         print("Building model...", end=' ')
         start = time.time()
-        model = NERModel(config, embeddings)
+        model = NaiveModel(config, embeddings)
         # parser.model = model
         init_op = tf.global_variables_initializer()
         saver = None if debug else tf.train.Saver()
