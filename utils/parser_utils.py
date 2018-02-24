@@ -15,7 +15,6 @@ UNK = '<UNK>'
 NULL = '<NULL>'
 ROOT = '<ROOT>'
 
-
 class Config(object):
     language = 'english'
     with_punct = True
@@ -387,7 +386,7 @@ def load_and_preprocess_data(reduced=True):
     return parser, embeddings_matrix, train_examples, dev_set, test_set,
 
 
-def get_chunks(seq, default=LBLS.index(NONE)):
+def get_chunks(seq, default):
     """Breaks input of 4 4 4 0 0 4 0 ->   (0, 4, 5), (0, 6, 7)"""
     chunks = []
     chunk_type, chunk_start = None, None

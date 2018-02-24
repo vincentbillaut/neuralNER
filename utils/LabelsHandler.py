@@ -43,3 +43,6 @@ class LabelsHandler(object):
                 'I-per',
                 'I-tim',
                 'O']
+
+    def noneIndex(self):
+        return self.labels_map.index('O')

@@ -177,8 +177,8 @@ class NERModel(object):
         for _, labels, labels_ in self.output(sess, examples_raw, examples):
             for l, l_ in zip(labels, labels_):
                 token_cm.update(l, l_)
-            gold = set(get_chunks(labels))
-            pred = set(get_chunks(labels_))
+            gold = set(get_chunks(labels, self.labelsHandler.noneIndex()))
+            pred = set(get_chunks(labels_, self.labelsHandler.noneIndex()))
             correct_preds += len(gold.intersection(pred))
             total_preds += len(pred)
             total_correct += len(gold)
