@@ -2,9 +2,9 @@ import logging
 
 import tensorflow as tf
 
-from model import Model
 from utils.minibatches import minibatches
 from utils.Progbar import Progbar
+from utils.LabelsHandler import LabelsHandler
 from utils.ConfusionMatrix import ConfusionMatrix
 
 logger = logging.getLogger("NERproject")
@@ -25,7 +25,7 @@ class Config(object):
     lr = 0.0005
 
 
-class NERModel(Model):
+class NERModel(object):
     """
     Implements a feedforward neural network with an embedding layer and single hidden layer.
     This network will predict whether an input word is a Named Entity
@@ -171,7 +171,7 @@ class NERModel(Model):
         Returns:
             The F1 score for predicting tokens as named entities.
         """
-        token_cm = ConfusionMatrix(labels=LBLS)
+        token_cm = ConfusionMatrix(labels=self.labelsHandler.keys())
 
         correct_preds, total_correct, total_preds = 0., 0., 0.
         for _, labels, labels_ in self.output(sess, examples_raw, examples):
@@ -230,3 +230,4 @@ class NERModel(Model):
         self.pretrained_embeddings = pretrained_embeddings
         self.config = config
         self.build()
+        self.labelsHandler = LabelsHandler()

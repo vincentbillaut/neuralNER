@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class LabelsHandler(object):
     def __init__(self):
         self.labels_map = {'B-art': 0,
@@ -23,3 +24,22 @@ class LabelsHandler(object):
 
     def to_label_ids(self, labels):
         return np.array([self.labels_map[label] for label in labels])
+
+    def keys(self):
+        return ['B-art',
+                'B-eve',
+                'B-geo',
+                'B-gpe',
+                'B-nat',
+                'B-org',
+                'B-per',
+                'B-tim',
+                'I-art',
+                'I-eve',
+                'I-geo',
+                'I-gpe',
+                'I-nat',
+                'I-org',
+                'I-per',
+                'I-tim',
+                'O']
