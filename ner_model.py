@@ -1,15 +1,13 @@
-import os
-import time
 import logging
 
 import tensorflow as tf
 
 from model import Model
-from utils.Embedder import Embedder
-from utils.LabelsHandler import LabelsHandler
 from utils.minibatches import minibatches
+from utils.Progbar import Progbar
+from utils.ConfusionMatrix import ConfusionMatrix
 
-logger = logging.getLogger("hw3")
+logger = logging.getLogger("NERproject")
 logger.setLevel(logging.DEBUG)
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
@@ -22,6 +20,9 @@ class Config(object):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
+    n_classes = 17
+    n_epochs = 10
+    lr = 0.0005
 
 
 class NERModel(Model):
@@ -29,6 +30,84 @@ class NERModel(Model):
     Implements a feedforward neural network with an embedding layer and single hidden layer.
     This network will predict whether an input word is a Named Entity
     """
+
+    def add_placeholders(self):
+        """Adds placeholder variables to tensorflow computational graph.
+
+        Tensorflow uses placeholder variables to represent locations in a
+        computational graph where data is inserted.  These placeholders are used as
+        inputs by the rest of the model building and will be fed data during
+        training.
+
+        See for more information:
+        https://www.tensorflow.org/versions/r0.7/api_docs/python/io_ops.html#placeholders
+        """
+        raise NotImplementedError("Each Model must re-implement this method.")
+
+    def create_feed_dict(self, inputs_batch, labels_batch=None):
+        """Creates the feed_dict for one step of training.
+
+        A feed_dict takes the form of:
+        feed_dict = {
+                <placeholder>: <tensor of values to be passed for placeholder>,
+                ....
+        }
+
+        If labels_batch is None, then no labels are added to feed_dict.
+
+        Hint: The keys for the feed_dict should be a subset of the placeholder
+                    tensors created in add_placeholders.
+        Args:
+            inputs_batch: A batch of input data.
+            labels_batch: A batch of label data.
+        Returns:
+            feed_dict: The feed dictionary mapping from placeholders to values.
+        """
+        raise NotImplementedError("Each Model must re-implement this method.")
+
+    def add_prediction_op(self):
+        """Implements the core of the model that transforms a batch of input data into predictions.
+
+        Returns:
+            pred: A tensor of shape (batch_size, n_classes)
+        """
+        raise NotImplementedError("Each Model must re-implement this method.")
+
+    def add_loss_op(self, pred):
+        """Adds Ops for the loss function to the computational graph.
+
+        Args:
+            pred: A tensor of shape (batch_size, n_classes)
+        Returns:
+            loss: A 0-d tensor (scalar) output
+        """
+        raise NotImplementedError("Each Model must re-implement this method.")
+
+    def add_training_op(self, loss):
+        """Sets up the training Ops.
+
+        Creates an optimizer and applies the gradients to all trainable variables.
+        The Op returned by this function is what must be passed to the
+        sess.run() to train the model. See
+
+        https://www.tensorflow.org/versions/r0.7/api_docs/python/train.html#Optimizer
+
+        for more information.
+
+        Args:
+            loss: Loss tensor (a scalar).
+        Returns:
+            train_op: The Op for training.
+        """
+
+        raise NotImplementedError("Each Model must re-implement this method.")
+
+    def build(self):
+        self.add_placeholders()
+        self.pred = self.add_prediction_op()
+        self.loss = self.add_loss_op(self.pred)
+        self.train_op = self.add_training_op(self.loss)
+
 
     def preprocess_sequence_data(self, examples):
         """Preprocess sequence data for the model.
@@ -50,6 +129,19 @@ class NERModel(Model):
         loss = sess.run([self.loss], feed_dict=feed)
         return loss
 
+    def predict_on_batch(self, sess, inputs_batch):
+        """Make predictions for the provided batch of data
+
+        Args:
+            sess: tf.Session()
+            input_batch: np.ndarray of shape (n_samples, n_features)
+        Returns:
+            predictions: np.ndarray of shape (n_samples, n_classes)
+        """
+        feed = self.create_feed_dict(inputs_batch)
+        predictions = sess.run(self.pred, feed_dict=feed)
+        return predictions
+
     def run_epoch(self, sess, train_examples, dev_set):
         n_minibatches = 1 + len(train_examples) / self.config.batch_size
         prog = tf.keras.utils.Progbar(target=n_minibatches)
@@ -60,11 +152,40 @@ class NERModel(Model):
         for batch in minibatches(dev_set, dev_set.shape[0]):
             break
         loss = self.test_on_batch(sess, *batch)
-        print("Evaluating on dev set", end=' ')
-        dev_UAS, _ = parser.parse(dev_set)
-        print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
-        return dev_UAS
+        # print("Evaluating on dev set", end=' ')
+        # dev_UAS, _ = parser.parse(dev_set)
+        # print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
+        # return dev_UAS
         return - loss[0]
+
+    def evaluate(self, sess, examples, examples_raw):
+        """Evaluates model performance on @examples.
+
+        This function uses the model to predict labels for @examples and constructs a confusion matrix.
+
+        Args:
+            sess: the current TensorFlow session.
+            examples: A list of vectorized input/output pairs.
+            examples: A list of the original input/output sequence pairs.
+        Returns:
+            The F1 score for predicting tokens as named entities.
+        """
+        token_cm = ConfusionMatrix(labels=LBLS)
+
+        correct_preds, total_correct, total_preds = 0., 0., 0.
+        for _, labels, labels_ in self.output(sess, examples_raw, examples):
+            for l, l_ in zip(labels, labels_):
+                token_cm.update(l, l_)
+            gold = set(get_chunks(labels))
+            pred = set(get_chunks(labels_))
+            correct_preds += len(gold.intersection(pred))
+            total_preds += len(pred)
+            total_correct += len(gold)
+
+        p = correct_preds / total_preds if correct_preds > 0 else 0
+        r = correct_preds / total_correct if correct_preds > 0 else 0
+        f1 = 2 * p * r / (p + r) if correct_preds > 0 else 0
+        return token_cm, (p, r, f1)
 
     def fit(self, sess, saver, train_examples_raw, dev_set_raw):
         best_score = 0.
@@ -108,4 +229,3 @@ class NERModel(Model):
         self.pretrained_embeddings = pretrained_embeddings
         self.config = config
         self.build()
-

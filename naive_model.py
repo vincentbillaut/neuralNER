@@ -1,13 +1,8 @@
-import os
-import time
 import tensorflow as tf
-import numpy as np
 
-from ner_model import NERModel
-from utils.minibatches import minibatches
+from ner_model import NERModel, Config
 
-
-class NaiveConfig(object):
+class NaiveConfig(Config):
     """Holds model hyperparams and data information.
 
     The config class is used to store various hyperparameters and dataset
@@ -15,14 +10,10 @@ class NaiveConfig(object):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    # n_features = 36
-    n_classes = 17
     dropout = 0.5
     embed_size = 50
     hidden_size = 200
     batch_size = 128
-    n_epochs = 10
-    lr = 0.0005
 
 
 class NaiveModel(NERModel):
