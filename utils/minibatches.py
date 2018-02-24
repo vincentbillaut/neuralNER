@@ -1,15 +1,15 @@
 import numpy as np
 
 
-def minibatches(data, batch_size):
+def minibatches(data, batch_size, shuffle=True):
     x = np.array([d[0] for d in data])
     y = np.array([d[1] for d in data])
     one_hot = np.zeros((y.size, 17))
     one_hot[np.arange(y.size), y] = 1
-    return get_minibatches([x, one_hot], batch_size)
+    return get_minibatches([x, one_hot], batch_size, shuffle)
 
 
-def get_minibatches(data, minibatch_size, shuffle=True):
+def get_minibatches(data, minibatch_size, shuffle):
     """
     Iterates through the provided data one minibatch at at time. You can use this function to
     iterate through data in minibatches as follows:

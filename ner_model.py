@@ -118,7 +118,8 @@ class NERModel(object):
             A new list of vectorized input/output pairs appropriate for the model.
         """
         print("Each Model must re-implement this method?")
-        return examples
+        examples_with_mask = list(zip(examples, iter(lambda:True, False)))
+        return examples_with_mask
 
     def train_on_batch(self, sess, inputs_batch, labels_batch):
         feed = self.create_feed_dict(inputs_batch.reshape(-1, 1), labels_batch=labels_batch)
@@ -187,6 +188,20 @@ class NERModel(object):
         r = correct_preds / total_correct if correct_preds > 0 else 0
         f1 = 2 * p * r / (p + r) if correct_preds > 0 else 0
         return token_cm, (p, r, f1)
+
+    def consolidate_predictions(self, examples_raw, examples, preds):
+        """Batch the predictions into groups of sentence length.
+        """
+        assert len(examples_raw) == len(examples)
+        assert len(examples_raw) == len(preds)
+
+        ret = []
+        for i, (sentence, labels) in enumerate(examples_raw):
+            _, _, mask = examples[i]
+            labels_ = [l for l, m in zip(preds[i], mask) if m]  # only select elements of mask.
+            assert len(labels_) == len(labels)
+            ret.append([sentence, labels, labels_])
+        return ret
 
     def output(self, sess, inputs_raw, inputs=None):
         """
