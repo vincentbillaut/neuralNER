@@ -80,17 +80,12 @@ class ParserModel(Model):
         concatenates those vectors:
             - Creates a tf.Variable and initializes it with self.pretrained_embeddings.
             - Uses the input_placeholder to index into the embeddings tensor, resulting in a
-              tensor of shape (None, n_features, embedding_size).
+              tensor of shape (None, 1, embedding_size).
             - Concatenates the embeddings by reshaping the embeddings tensor to shape
-              (None, n_features * embedding_size).
-
-        Hint: You might find tf.nn.embedding_lookup useful.
-        Hint: You can use tf.reshape to concatenate the vectors. See following link to understand
-            what -1 in a shape means.
-            https://www.tensorflow.org/api_docs/python/tf/reshape
+              (None, 1 * embedding_size).
 
         Returns:
-            embeddings: tf.Tensor of shape (None, n_features*embed_size)
+            embeddings: tf.Tensor of shape (None, 1*embed_size)
         """
 
         init_embed = tf.Variable(initial_value=self.pretrained_embeddings)
