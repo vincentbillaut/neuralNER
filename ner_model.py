@@ -183,7 +183,7 @@ class NERModel(object):
         Args:
             sess: the current TensorFlow session.
             examples: A list of vectorized input/output pairs.
-            examples: A list of the original input/output sequence pairs.
+            examples_raw: A list of the original input/output sequence pairs.
         Returns:
             The F1 score for predicting tokens as named entities.
         """
@@ -228,11 +228,11 @@ class NERModel(object):
             prog.update(i + 1, [])
         return self.consolidate_predictions(inputs_raw, inputs, preds)
 
-    def fit(self, sess, saver, train_examples_raw, dev_set_raw):
+    def fit(self, sess, saver, train_examples_raw, dev_examples_raw):
         best_score = 0.
 
         train_examples = self.preprocess_sequence_data(train_examples_raw)
-        dev_set = self.preprocess_sequence_data(dev_set_raw)
+        dev_examples = self.preprocess_sequence_data(dev_examples_raw)
 
         for epoch in range(self.config.n_epochs):
             logger.info("Epoch %d out of %d", epoch + 1, self.config.n_epochs)
@@ -252,7 +252,7 @@ class NERModel(object):
                 prog.update(i + 1, [("loss = ", loss)])
 
             logger.info("Evaluating on development data")
-            token_cm, entity_scores = self.evaluate(sess, dev_set, dev_set_raw)
+            token_cm, entity_scores = self.evaluate(sess, dev_examples, dev_examples_raw)
             logger.debug("Token-level confusion matrix:\n" + token_cm.as_table())
             logger.debug("Token-level scores:\n" + token_cm.summary())
             logger.info("Entity level P/R/F1: %.2f/%.2f/%.2f", *entity_scores)

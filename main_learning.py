@@ -3,10 +3,8 @@ import time
 
 import tensorflow as tf
 
-from utils.Embedder import Embedder
-from utils.LabelsHandler import LabelsHandler
-
 from naive_model import NaiveConfig, NaiveModel
+from utils.Embedder import Embedder
 
 
 def main(debug=True):
@@ -14,12 +12,12 @@ def main(debug=True):
     print("INITIALIZING")
     print(80 * "=")
     config = NaiveConfig()
-    # parser, embeddings, train_examples, dev_set, test_set = load_and_preprocess_data(debug)
     embedder = Embedder()
-    embeddings, tok2idMap, train_set = embedder.load_and_preprocess_data(debug)
+    embeddings, tok2idMap, learning_set = embedder.load_and_preprocess_data(debug)
 
-    labels_handler = LabelsHandler()
-    train_set = [(train_example, labels_handler.to_label_ids(labels)) for train_example, labels in train_set]
+    train_set = learning_set[:int(len(learning_set) * .9)]
+    dev_set = learning_set[int(len(learning_set) * .9):]
+
     if not os.path.exists('./data/weights/'):
         os.makedirs('./data/weights/')
 
@@ -34,27 +32,12 @@ def main(debug=True):
     graph.finalize()
 
     with tf.Session(graph=graph) as session:
-        # parser.session = session
         session.run(init_op)
 
         print(80 * "=")
         print("TRAINING")
         print(80 * "=")
-        model.fit(session, saver, train_set, train_set)  # TODO dev set
-
-        if not debug:
-            print(80 * "=")
-            print("TESTING")
-            print(80 * "=")
-            print("Restoring the best model weights found on the dev set")
-            saver.restore(session, './data/weights/parser.weights')
-            print("Final evaluation on test set", end=' ')
-            UAS, dependencies = parser.parse(test_set)
-            print("- test UAS: {:.2f}".format(UAS * 100.0))
-            print("Writing predictions")
-            with open('q2_test.predicted.pkl', 'w') as f:
-                cPickle.dump(dependencies, f, -1)
-            print("Done!")
+        model.fit(session, saver, train_set, dev_set)
 
 
 if __name__ == '__main__':

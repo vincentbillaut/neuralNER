@@ -177,6 +177,6 @@ class LSTMModel(NERModel):
 
         return train_op
 
-    def fit(self, sess, saver, train_examples_raw, dev_set_raw):
+    def fit(self, sess, saver, train_examples_raw, dev_examples_raw):
         self.transition_matrix = compute_transition_matrix(self.config, train_examples_raw)
-        return super().fit(sess, saver, train_examples_raw, dev_set_raw)
+        return super().fit(sess, saver, train_examples_raw, dev_examples_raw)

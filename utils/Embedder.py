@@ -4,6 +4,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from utils.LabelsHandler import LabelsHandler
+
 
 class Embedder(object):
     # language = 'english'
@@ -52,22 +54,24 @@ class Embedder(object):
     def load_and_preprocess_data(self, reduced=True, embed_size=50):
         print("Loading {}data...".format("(reduced) " if reduced else ''), end='')
         start = time.time()
-        train_set = self.read_conll(os.path.join(self.data_path, self.train_file),
-                                    lowercase=self.lowercase)
-        # dev_set = read_conll(os.path.join(config.data_path, config.dev_file),
-        #                      lowercase=config.lowercase)
-        # test_set = read_conll(os.path.join(config.data_path, config.test_file),
-        #                       lowercase=config.lowercase)
+        learning_set = self.read_conll(os.path.join(self.data_path, self.train_file),
+                                       lowercase=self.lowercase)
         if reduced:
-            train_set = train_set[:1000]
-            # dev_set = dev_set[:500]
-            # test_set = test_set[:500]
+            learning_set = learning_set[:1000]
+        else:
+            learning_set = learning_set[:10000]
+
         print("took {:.2f} seconds".format(time.time() - start))
 
         print("Generating tokens...", end='')
         start = time.time()
-        unique_words = frozenset().union(*[set(sentence[0]) for sentence in train_set])
+        unique_words = frozenset().union(*[set(sentence[0]) for sentence in learning_set])
         self.tok2id = {l: i for (i, l) in enumerate(unique_words)}
+        learning_set_embedded = [(self.embed_sentence(sentence), label) for sentence, label in learning_set]
+
+        labels_handler = LabelsHandler()
+        learning_set_embedded_labelled = [(train_example, labels_handler.to_label_ids(labels))
+                                          for train_example, labels in learning_set_embedded]
         print("took {:.2f} seconds".format(time.time() - start))
 
         print("Loading pretrained embeddings...", end='')
@@ -86,5 +90,4 @@ class Embedder(object):
                 embeddings_matrix[i] = word_vectors[token.lower()]
         print("took {:.2f} seconds".format(time.time() - start))
 
-        train_set_embedded = [(self.embed_sentence(sentence), label) for sentence, label in train_set]
-        return embeddings_matrix, self.tok2id, train_set_embedded
+        return embeddings_matrix, self.tok2id, learning_set_embedded_labelled
