@@ -133,7 +133,7 @@ class NERModel(object):
         Returns:
             A new list of vectorized input/output pairs appropriate for the model.
         """
-        examples_with_mask = [(*ex, mask) for ex, mask in zip(examples, iter(lambda: True, False))]
+        examples_with_mask = [(ex[0], ex[1], mask) for ex, mask in zip(examples, iter(lambda: True, False))]
         return examples_with_mask
 
     def train_on_batch(self, sess, inputs_batch, labels_batch):

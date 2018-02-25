@@ -41,4 +41,4 @@ def main(reduced=False):
 
 
 if __name__ == '__main__':
-    main(reduced=False)
+    main(reduced=True)
