@@ -139,7 +139,7 @@ class NERModel(object):
         Returns:
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
-        feed = self.create_feed_dict(inputs_batch)
+        feed = self.create_feed_dict(inputs_batch.reshape(-1, 1))
         predictions = sess.run(self.pred, feed_dict=feed)
         return predictions
 
