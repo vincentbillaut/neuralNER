@@ -5,6 +5,7 @@ from datetime import datetime
 import tensorflow as tf
 
 from utils.ConfusionMatrix import ConfusionMatrix
+from utils.Embedder import Embedder
 from utils.LabelsHandler import LabelsHandler
 from utils.Progbar import Progbar
 from utils.minibatches import minibatches
@@ -272,3 +273,4 @@ class NERModel(object):
         self.config = config
         self.build()
         self.labelsHandler = LabelsHandler()
+        self.embedder = Embedder()

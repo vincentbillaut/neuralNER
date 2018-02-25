@@ -40,7 +40,6 @@ class NaiveModel(NERModel):
         """Batch the predictions into groups of sentence length.
         """
         ret = []
-        # pdb.set_trace()
         i = 0
         for sentence, labels in examples_raw:
             labels_ = preds[i:i + len(sentence)]

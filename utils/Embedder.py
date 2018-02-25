@@ -17,9 +17,10 @@ class Embedder(object):
     # use_dep = use_dep and (not unlabeled)
     data_path = './data'
     train_file = 'ner_dataset.csv'
-    # dev_file = 'dev.conll'
-    # test_file = 'test.conll'
     embedding_file = './data/en-cw.txt'
+
+    start_token = "<s>"
+    end_token = "</s>"
 
     def read_conll(seld, path, lowercase=False):
         """
@@ -63,7 +64,8 @@ class Embedder(object):
 
         print("Generating tokens...", end='')
         start = time.time()
-        unique_words = frozenset().union(*[set(sentence[0]) for sentence in learning_set])
+        unique_words = frozenset().union(*[set(sentence[0]) for sentence in learning_set],
+                                         {self.start_token, self.end_token})
         self.tok2id = {l: i for (i, l) in enumerate(unique_words)}
         learning_set_embedded = [(self.embed_sentence(sentence), label) for sentence, label in learning_set]
 

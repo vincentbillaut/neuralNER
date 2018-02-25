@@ -92,3 +92,17 @@ def get_chunks(seq, default):
         chunk = (chunk_type, chunk_start, len(seq))
         chunks.append(chunk)
     return chunks
+
+def window_iterator(seq, n=1, beg="<s>", end="</s>"):
+    """
+    Iterates through seq by returning windows of length 2n+1
+    """
+    for i in range(len(seq)):
+        l = max(0, i-n)
+        r = min(len(seq), i+n+1)
+        ret = seq[l:r]
+        if i < n:
+            ret = [beg,] * (n-i) + ret
+        if i+n+1 > len(seq):
+            ret = ret + [end,] * (i+n+1 - len(seq))
+        yield ret
