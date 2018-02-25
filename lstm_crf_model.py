@@ -1,8 +1,20 @@
+import os
+import time
 import tensorflow as tf
+import numpy as np
 
-from ner_model import NERModel, Config
+from ner_model import NERModel
+from utils.minibatches import minibatches
 
-class NaiveConfig(Config):
+
+def compute_transition_matrix():
+
+
+
+    return transit
+
+
+class LSTMConfig(object):
     """Holds model hyperparams and data information.
 
     The config class is used to store various hyperparameters and dataset
@@ -10,13 +22,16 @@ class NaiveConfig(Config):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    dropout = 0.5
+    # n_features = 36
+    n_classes = 17
     embed_size = 50
     hidden_size = 200
     batch_size = 128
+    n_epochs = 10
+    lr = 0.0005
 
 
-class NaiveModel(NERModel):
+class LSTMModel(NERModel):
     """
     Implements a feedforward neural network with an embedding layer and single hidden layer.
     This network will predict whether an input word is a Named Entity
@@ -29,17 +44,19 @@ class NaiveModel(NERModel):
             containing index of our word in the embedding
         labels_placeholder: Labels placeholder tensor of shape (None, n_classes), type tf.float32
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
+        mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
         """
         self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
         self.labels_placeholder = tf.placeholder(
             tf.float32, (None, self.config.n_classes))
-        self.dropout_placeholder = tf.placeholder(tf.float32)
+        self.mask_placeholder = tf.placeholder(tf.bool, [None, self.max_length])
 
-    def create_feed_dict(self, inputs, labels_batch=None, dropout=0):
+    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
         """Creates the feed_dict for the dependency parser.
 
         Args:
             inputs_batch: A batch of input data.
+            mask_batch:   A batch of mask data.
             labels_batch: A batch of label data.
             dropout: Dropout rate.
         Returns:
@@ -48,7 +65,7 @@ class NaiveModel(NERModel):
 
         feed_dict = {
             self.input_placeholder: inputs,
-            self.dropout_placeholder: dropout
+            self.mask_placeholder: mask_batch
         }
         if labels_batch is not None:
             feed_dict[self.labels_placeholder] = labels_batch
@@ -72,29 +89,25 @@ class NaiveModel(NERModel):
         return embeddings
 
     def add_prediction_op(self):
-        """Adds the 1-hidden-layer NN:
-            h = Relu(xW + b1)
-            h_drop = Dropout(h, dropout_rate)
-            pred = h_dropU + b2
+        """Adds the unrolled LSTM
 
         Returns:
-            pred: tf.Tensor of shape (batch_size, n_classes)
+            pred:   tf.Tensor of shape (batch_size, pad_length, n_classes)
         """
 
         x = self.add_embedding()
+        cell = tf.rnn.LSTMCell()
+        preds = []
 
-        init = tf.contrib.layers.xavier_initializer()
+        hidden_state = tf.constant(tf.zeros(self.config.hidden_size))
 
-        W = tf.Variable(init(shape=[self.config.embed_size, self.config.hidden_size]))
-        U = tf.Variable(init(shape=[self.config.hidden_size, self.config.n_classes]))
+        for t in range(self.config.pad_length):
+            output, hidden_state = cell(self.input_placeholder, hidden_state)
+            preds.append(output)
 
-        b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1")
-        b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2")
+        pred = tf.stack(preds)
 
-        h = tf.nn.relu(tf.matmul(x, W) + b1)
-        h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
-        pred = tf.matmul(h_drop, U) + b2
-
+        assert preds.get_shape().as_list() == [None, self.pad_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.pad_length, self.config.n_classes], preds.get_shape().as_list())
         return pred
 
     def add_loss_op(self, pred):
@@ -109,10 +122,13 @@ class NaiveModel(NERModel):
             loss: A 0-d tensor (scalar)
         """
 
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
-            labels=self.labels_placeholder,
-            logits=pred
-        )
+        cross_entropy = tf.boolean_mask(
+                tf.nn.sparse_softmax_cross_entropy_with_logits(
+                    labels=self.labels_placeholder,
+                    logits=pred
+                ),
+                self.mask_placeholder
+            )
         loss = tf.reduce_mean(cross_entropy)
 
         return loss
@@ -134,3 +150,7 @@ class NaiveModel(NERModel):
         train_op = opt.minimize(loss)
 
         return train_op
+
+    def fit(self, sess, saver, train_examples_raw, dev_set_raw):
+        
+        return super().fit(sess, saver, train_examples_raw, dev_set_raw)
