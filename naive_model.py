@@ -1,6 +1,7 @@
 import tensorflow as tf
-
+import numpy as np
 from ner_model import NERModel, Config
+
 
 class NaiveConfig(Config):
     """Holds model hyperparams and data information.
@@ -21,6 +22,19 @@ class NaiveModel(NERModel):
     Implements a feedforward neural network with an embedding layer and single hidden layer.
     This network will predict whether an input word is a Named Entity
     """
+
+    def preprocess_sequence_data(self, examples):
+        """Preprocess sequence data for the model.
+
+        Args:
+            examples: A list of vectorized input/output sequences.
+        Returns:
+            A new list of vectorized input/output pairs appropriate for the model.
+        """
+        words = np.concatenate([example[0] for example in examples])
+        labels = np.concatenate([example[1] for example in examples])
+        examples_with_mask = [(ex, label, mask) for ex, label, mask in zip(words, labels, iter(lambda: True, False))]
+        return examples_with_mask
 
     def add_placeholders(self):
         """Generates placeholder variables to represent the input tensors
