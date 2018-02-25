@@ -7,10 +7,29 @@ from ner_model import NERModel
 from utils.minibatches import minibatches
 
 
-def compute_transition_matrix():
+def compute_transition_matrix(config, examples):
+    """Computes the transition matrix A based on the training set provided
+    in argument. A[i,j] corresponds to the likelihood of seeing a transition
+    of type "ith label --> jth label"
 
+    Parameters
+    ----------
+    config : LSTMConfig
+        Config object, to have access to n_classes.
+    examples : list
+        Training set, to have access to our training labels
 
+    Returns
+    -------
+    ndarray
+        Transition matrix computed from the training examples.
 
+    """
+    transit = np.zeros((config.n_classes, config.n_classes))
+    for _, labels in examples:
+        for i in range(len(labels)-1):
+            transit[labels[i], labels[i+1]] += 1
+    transit /= transit.sum(???)
     return transit
 
 
@@ -152,5 +171,5 @@ class LSTMModel(NERModel):
         return train_op
 
     def fit(self, sess, saver, train_examples_raw, dev_set_raw):
-        
+        self.transition_matrix = compute_transition_matrix(self.config, train_examples_raw)
         return super().fit(sess, saver, train_examples_raw, dev_set_raw)
