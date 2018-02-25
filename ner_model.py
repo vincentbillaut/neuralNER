@@ -1,11 +1,13 @@
 import logging
+import os
+from datetime import datetime
 
 import tensorflow as tf
 
-from utils.minibatches import minibatches
-from utils.Progbar import Progbar
-from utils.LabelsHandler import LabelsHandler
 from utils.ConfusionMatrix import ConfusionMatrix
+from utils.LabelsHandler import LabelsHandler
+from utils.Progbar import Progbar
+from utils.minibatches import minibatches
 from utils.parser_utils import get_chunks
 
 logger = logging.getLogger("NERproject")
@@ -24,6 +26,16 @@ class Config(object):
     n_classes = 17
     n_epochs = 10
     lr = 0.0005
+
+    def __init__(self):
+        name = type(self).__name__
+        output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        self.model_output = output_path + "model.weights"
+        self.eval_output = output_path + "results.txt"
+        self.log_output = output_path + "log"
+        self.conll_output = output_path + "window_predictions.conll"
 
 
 class NERModel(object):
