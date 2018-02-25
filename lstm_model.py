@@ -143,9 +143,3 @@ class LSTMModel(NERModel):
         train_op = opt.minimize(loss)
 
         return train_op
-
-
-    def __init__(self, config, pretrained_embeddings):
-        self.pretrained_embeddings = pretrained_embeddings
-        self.config = config
-        self.build()
