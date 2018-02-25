@@ -36,6 +36,18 @@ class NaiveModel(NERModel):
         examples_with_mask = [(ex, label, mask) for ex, label, mask in zip(words, labels, iter(lambda: True, False))]
         return examples_with_mask
 
+    def consolidate_predictions(self, examples_raw, examples, preds):
+        """Batch the predictions into groups of sentence length.
+        """
+        ret = []
+        # pdb.set_trace()
+        i = 0
+        for sentence, labels in examples_raw:
+            labels_ = preds[i:i + len(sentence)]
+            i += len(sentence)
+            ret.append([sentence, labels, labels_])
+        return ret
+
     def add_placeholders(self):
         """Generates placeholder variables to represent the input tensors
 

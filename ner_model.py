@@ -103,9 +103,13 @@ class NERModel(object):
 
         raise NotImplementedError("Each Model must re-implement this method.")
 
+    def add_predict_onehot(self):
+        return tf.argmax(self.pred, axis=1)
+
     def build(self):
         self.add_placeholders()
         self.pred = self.add_prediction_op()
+        self.pred_onehot = self.add_predict_onehot()
         self.loss = self.add_loss_op(self.pred)
         self.train_op = self.add_training_op(self.loss)
 
@@ -117,7 +121,7 @@ class NERModel(object):
         Returns:
             A new list of vectorized input/output pairs appropriate for the model.
         """
-        examples_with_mask = [(*ex, mask)for ex, mask in zip(examples, iter(lambda: True, False))]
+        examples_with_mask = [(*ex, mask) for ex, mask in zip(examples, iter(lambda: True, False))]
         return examples_with_mask
 
     def train_on_batch(self, sess, inputs_batch, labels_batch):
@@ -140,7 +144,7 @@ class NERModel(object):
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
         feed = self.create_feed_dict(inputs_batch.reshape(-1, 1))
-        predictions = sess.run(self.pred, feed_dict=feed)
+        predictions = sess.run(self.pred_onehot, feed_dict=feed)
         return predictions
 
     # def run_epoch(self, sess, train_examples, dev_set):
@@ -188,19 +192,12 @@ class NERModel(object):
         f1 = 2 * p * r / (p + r) if correct_preds > 0 else 0
         return token_cm, (p, r, f1)
 
-    def consolidate_predictions(self, examples_raw, examples, preds):
-        """Batch the predictions into groups of sentence length.
+    def consolidate_predictions(self, data_raw, data, preds):
         """
-        assert len(examples_raw) == len(examples)
-        assert len(examples_raw) == len(preds)
-
-        ret = []
-        for i, (sentence, labels) in enumerate(examples_raw):
-            _, _, mask = examples[i]
-            labels_ = [l for l, m in zip(preds[i], mask) if m]  # only select elements of mask.
-            assert len(labels_) == len(labels)
-            ret.append([sentence, labels, labels_])
-        return ret
+        Convert a sequence of predictions according to the batching
+        process back into the original sequence.
+        """
+        raise NotImplementedError("Each Model must re-implement this method.")
 
     def output(self, sess, inputs_raw, inputs=None):
         """

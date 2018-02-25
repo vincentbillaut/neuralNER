@@ -48,4 +48,4 @@ class LabelsHandler(object):
         return len(self.labels_map)
 
     def noneIndex(self):
-        return self.labels_map.index('O')
+        return 16
