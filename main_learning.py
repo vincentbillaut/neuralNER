@@ -19,9 +19,7 @@ def main(debug=True):
     embeddings, tok2idMap, train_set = embedder.load_and_preprocess_data(debug)
 
     labels_handler = LabelsHandler()
-    labels_ids = labels_handler.to_label_ids(train_set[:, 1])
-    train_set = [(train_example, label) for train_example, label in zip(train_set[:, 0], labels_ids)]
-
+    train_set = [(train_example, labels_handler.to_label_ids(labels)) for train_example, labels in train_set]
     if not os.path.exists('./data/weights/'):
         os.makedirs('./data/weights/')
 

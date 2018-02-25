@@ -19,13 +19,34 @@ class Embedder(object):
     # test_file = 'test.conll'
     embedding_file = './data/en-cw.txt'
 
-    def read_conll(self, path, lowercase=False):
-        input_data_frame = pd.read_csv(path,
-                                     encoding="ISO-8859-1")
-        input_array = np.array(input_data_frame.loc[:, ["Word", "Tag"]])
-        return input_array
+    def read_conll(seld, path, lowercase=False):
+        """
+        Reads a input stream @fstream (e.g. output of `open(fname, 'r')`) in CoNLL file format.
+        @returns a list of examples [(tokens), (labels)]. @tokens and @labels are lists of string.
+        """
+        ret = []
 
-    def embed(self, wordsArray):
+        current_toks, current_lbls = [], []
+        for line in open(path, 'r', encoding="ISO-8859-1"):
+            line = line.strip()
+            if len(line) == 0 or "Sentence" in line:
+                if len(current_toks) > 0:
+                    assert len(current_toks) == len(current_lbls)
+                    ret.append((current_toks, current_lbls))
+                current_toks, current_lbls = [], []
+            else:
+                assert "," in line, r"Invalid CONLL format; expected a ',' in {}".format(line)
+                splitted_line = line.split(",")
+                tok = "".join(splitted_line[1:-2])
+                lbl = splitted_line[-1]
+                current_toks.append(tok)
+                current_lbls.append(lbl)
+        if len(current_toks) > 0:
+            assert len(current_toks) == len(current_lbls)
+            ret.append((current_toks, current_lbls))
+        return ret
+
+    def embed_sentence(self, wordsArray):
         return np.array([self.tok2id[word] for word in wordsArray])
 
     def load_and_preprocess_data(self, reduced=True, embed_size=50):
@@ -38,14 +59,15 @@ class Embedder(object):
         # test_set = read_conll(os.path.join(config.data_path, config.test_file),
         #                       lowercase=config.lowercase)
         if reduced:
-            train_set = train_set[:100000]
+            train_set = train_set[:1000]
             # dev_set = dev_set[:500]
             # test_set = test_set[:500]
         print("took {:.2f} seconds".format(time.time() - start))
 
         print("Generating tokens...", end='')
         start = time.time()
-        self.tok2id = {l: i for (i, l) in enumerate(set(train_set[:, 0]))}
+        unique_words = frozenset().union(*[set(sentence[0]) for sentence in train_set])
+        self.tok2id = {l: i for (i, l) in enumerate(unique_words)}
         print("took {:.2f} seconds".format(time.time() - start))
 
         print("Loading pretrained embeddings...", end='')
@@ -64,5 +86,5 @@ class Embedder(object):
                 embeddings_matrix[i] = word_vectors[token.lower()]
         print("took {:.2f} seconds".format(time.time() - start))
 
-        train_set[:, 0] = self.embed(train_set[:, 0])
-        return embeddings_matrix, self.tok2id, train_set
+        train_set_embedded = [(self.embed_sentence(sentence), label) for sentence, label in train_set]
+        return embeddings_matrix, self.tok2id, train_set_embedded
