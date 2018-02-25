@@ -44,5 +44,8 @@ class LabelsHandler(object):
                 'I-tim',
                 'O']
 
+    def num_labels(self):
+        return len(self.labels_map)
+
     def noneIndex(self):
         return self.labels_map.index('O')

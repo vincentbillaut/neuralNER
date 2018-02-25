@@ -117,8 +117,7 @@ class NERModel(object):
         Returns:
             A new list of vectorized input/output pairs appropriate for the model.
         """
-        print("Each Model must re-implement this method?")
-        examples_with_mask = list(zip(examples, iter(lambda:True, False)))
+        examples_with_mask = [(*ex, mask)for ex, mask in zip(examples, iter(lambda: True, False))]
         return examples_with_mask
 
     def train_on_batch(self, sess, inputs_batch, labels_batch):
@@ -144,21 +143,21 @@ class NERModel(object):
         predictions = sess.run(self.pred, feed_dict=feed)
         return predictions
 
-    def run_epoch(self, sess, train_examples, dev_set):
-        n_minibatches = 1 + len(train_examples) / self.config.batch_size
-        prog = tf.keras.utils.Progbar(target=n_minibatches)
-        for i, (train_x, train_y) in enumerate(minibatches(train_examples, self.config.batch_size)):
-            loss = self.train_on_batch(sess, train_x, train_y)
-            prog.update(i + 1, [("train loss", loss)], force=i + 1 == n_minibatches)
-
-        for batch in minibatches(dev_set, dev_set.shape[0]):
-            break
-        loss = self.test_on_batch(sess, *batch)
-        # print("Evaluating on dev set", end=' ')
-        # dev_UAS, _ = parser.parse(dev_set)
-        # print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
-        # return dev_UAS
-        return - loss[0]
+    # def run_epoch(self, sess, train_examples, dev_set):
+    #     n_minibatches = 1 + len(train_examples) / self.config.batch_size
+    #     prog = tf.keras.utils.Progbar(target=n_minibatches)
+    #     for i, (train_x, train_y) in enumerate(minibatches(train_examples, self.config.batch_size)):
+    #         loss = self.train_on_batch(sess, train_x, train_y)
+    #         prog.update(i + 1, [("train loss", loss)], force=i + 1 == n_minibatches)
+    #
+    #     for batch in minibatches(dev_set, dev_set.shape[0]):
+    #         break
+    #     loss = self.test_on_batch(sess, *batch)
+    #     # print("Evaluating on dev set", end=' ')
+    #     # dev_UAS, _ = parser.parse(dev_set)
+    #     # print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
+    #     # return dev_UAS
+    #     return - loss[0]
 
     def evaluate(self, sess, examples, examples_raw):
         """Evaluates model performance on @examples.
@@ -238,7 +237,8 @@ class NERModel(object):
             # Note that get_minibatches could either return a list, or a list of list
             # [features, labels]. This makes expanding tuples into arguments (* operator) handy
 
-            for i, minibatch in enumerate(minibatches(train_examples, self.config.batch_size)):
+            for i, minibatch in enumerate(
+                    minibatches(train_examples, self.config.batch_size, self.labelsHandler.num_labels())):
                 loss = self.train_on_batch(sess, *minibatch)
                 prog.update(i + 1, [("loss = ", loss)])
 

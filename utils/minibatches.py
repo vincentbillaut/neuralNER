@@ -1,10 +1,10 @@
 import numpy as np
 
 
-def minibatches(data, batch_size, shuffle=True):
+def minibatches(data, batch_size, shuffle=True, num_classes=17):
     x = np.array([d[0] for d in data])
     y = np.array([d[1] for d in data])
-    one_hot = np.zeros((y.size, 17))
+    one_hot = np.zeros((y.size, num_classes))
     one_hot[np.arange(y.size), y] = 1
     return get_minibatches([x, one_hot], batch_size, shuffle)
 
@@ -50,12 +50,11 @@ def get_minibatches(data, minibatch_size, shuffle):
 def _minibatch(data, minibatch_idx):
     return data[minibatch_idx] if type(data) is np.ndarray else [data[i] for i in minibatch_idx]
 
-
-def test_all_close(name, actual, expected):
-    if actual.shape != expected.shape:
-        raise ValueError("{:} failed, expected output to have shape {:} but has shape {:}"
-                         .format(name, expected.shape, actual.shape))
-    if np.amax(np.fabs(actual - expected)) > 1e-6:
-        raise ValueError("{:} failed, expected {:} but value is {:}".format(name, expected, actual))
-    else:
-        print(name, "passed!")
+# def test_all_close(name, actual, expected):
+#     if actual.shape != expected.shape:
+#         raise ValueError("{:} failed, expected output to have shape {:} but has shape {:}"
+#                          .format(name, expected.shape, actual.shape))
+#     if np.amax(np.fabs(actual - expected)) > 1e-6:
+#         raise ValueError("{:} failed, expected {:} but value is {:}".format(name, expected, actual))
+#     else:
+#         print(name, "passed!")
