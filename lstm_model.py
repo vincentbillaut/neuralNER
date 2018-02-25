@@ -82,13 +82,10 @@ class LSTMModel(NERModel):
         return embeddings
 
     def add_prediction_op(self):
-        """Adds the 1-hidden-layer NN:
-            h = Relu(xW + b1)
-            h_drop = Dropout(h, dropout_rate)
-            pred = h_dropU + b2
+        """Adds the unrolled LSTM
 
         Returns:
-            pred: tf.Tensor of shape (batch_size, n_classes)
+            pred:   tf.Tensor of shape (batch_size, pad_length, n_classes)
         """
 
         x = self.add_embedding()
@@ -103,6 +100,7 @@ class LSTMModel(NERModel):
 
         pred = tf.stack(preds)
 
+        assert preds.get_shape().as_list() == [None, self.pad_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.pad_length, self.config.n_classes], preds.get_shape().as_list())
         return pred
 
     def add_loss_op(self, pred):
