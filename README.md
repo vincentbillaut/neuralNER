@@ -34,7 +34,7 @@ We will use the quantitative evaluation metric formalized in [4]: the $\textbf{F
 
 ## Code overview
 
-Our code -- or at least the first iterations of it -- is very largely inspired from **Stanford's CS224N starter code for [Assignment 2](http://web.stanford.edu/class/cs224n/assignment2/index.html)**. The framework this repo provided seemed to us like a good base to build upon.  
+Our code -- or at least the first iterations of it -- is very largely inspired from **Stanford's CS224N starter code for [Assignment 2](http://web.stanford.edu/class/cs224n/assignment2/index.html) and [Assignment 3](http://web.stanford.edu/class/cs224n/assignment3/index.html)**. The framework this repo provided seemed to us like a good base to build upon.  
 It basically features a set of objects that make the development of a clean `tensorflow` work environment easier.
 We made many adjustments to fit our own specifications but tried to be consistent with the way it was coded in the beginning.
 
