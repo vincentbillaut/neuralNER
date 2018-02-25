@@ -10,7 +10,12 @@ from utils.minibatches import minibatches
 def compute_transition_matrix(config, examples):
     """Computes the transition matrix A based on the training set provided
     in argument. A[i,j] corresponds to the likelihood of seeing a transition
-    of type "ith label --> jth label"
+    of type "ith label --> jth label". 0 and n_classes are the start and end
+    tags of a sequence.
+
+    See
+    https://arxiv.org/pdf/1603.01360.pdf
+    section 2.2 for more details.
 
     Parameters
     ----------
@@ -25,11 +30,13 @@ def compute_transition_matrix(config, examples):
         Transition matrix computed from the training examples.
 
     """
-    transit = np.zeros((config.n_classes, config.n_classes))
+    transit = np.zeros((config.n_classes+2, config.n_classes+2))
     for _, labels in examples:
+        transit[0,labels[0]] += 1
         for i in range(len(labels)-1):
             transit[labels[i], labels[i+1]] += 1
-    transit /= transit.sum(???)
+        transit[labels[-1],config.n_classes+1] += 1
+    transit = (transit.T * 1.0 / transit.sum(axis=1)).T
     return transit
 
 
