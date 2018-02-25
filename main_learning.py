@@ -7,13 +7,13 @@ from naive_model import NaiveConfig, NaiveModel
 from utils.Embedder import Embedder
 
 
-def main(debug=True):
+def main(reduced=False):
     print(80 * "=")
     print("INITIALIZING")
     print(80 * "=")
     config = NaiveConfig()
     embedder = Embedder()
-    embeddings, tok2idMap, learning_set = embedder.load_and_preprocess_data(debug)
+    embeddings, tok2idMap, learning_set = embedder.load_and_preprocess_data(reduced)
 
     train_set = learning_set[:int(len(learning_set) * .9)]
     dev_set = learning_set[int(len(learning_set) * .9):]
@@ -27,7 +27,7 @@ def main(debug=True):
         model = NaiveModel(config, embeddings)
         # parser.model = model
         init_op = tf.global_variables_initializer()
-        saver = None if debug else tf.train.Saver()
+        saver = tf.train.Saver()
         print("took {:.2f} seconds\n".format(time.time() - start))
     graph.finalize()
 
@@ -41,4 +41,4 @@ def main(debug=True):
 
 
 if __name__ == '__main__':
-    main(debug=False)
+    main(reduced=False)

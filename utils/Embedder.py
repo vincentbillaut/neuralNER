@@ -51,15 +51,13 @@ class Embedder(object):
     def embed_sentence(self, wordsArray):
         return np.array([self.tok2id[word] for word in wordsArray])
 
-    def load_and_preprocess_data(self, reduced=True, embed_size=50):
+    def load_and_preprocess_data(self, reduced=False, embed_size=50):
         print("Loading {}data...".format("(reduced) " if reduced else ''), end='')
         start = time.time()
         learning_set = self.read_conll(os.path.join(self.data_path, self.train_file),
                                        lowercase=self.lowercase)
         if reduced:
             learning_set = learning_set[:1000]
-        else:
-            learning_set = learning_set[:10000]
 
         print("took {:.2f} seconds".format(time.time() - start))
 
