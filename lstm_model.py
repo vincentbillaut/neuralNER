@@ -15,9 +15,6 @@ class LSTMConfig(object):
     n_classes = 17
     embed_size = 50
     hidden_size = 200
-    batch_size = 128
-    n_epochs = 10
-    lr = 0.0005
     max_length = 120
 
 

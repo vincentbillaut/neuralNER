@@ -11,16 +11,17 @@ class Embedder(object):
     # language = 'english'
     # with_punct = True
     # unlabeled = True
-    lowercase = True
+    lowercase = False
     # use_pos = True
     # use_dep = True
     # use_dep = use_dep and (not unlabeled)
-    data_path = './data'
-    train_file = 'ner_dataset.csv'
-    embedding_file = './data/en-cw.txt'
 
     start_token = "<s>"
     end_token = "</s>"
+
+    def __init__(self, args):
+        self.train_file = args.data_train
+        self.embedding_file = args.vectors
 
     def read_conll(seld, path, lowercase=False):
         """
@@ -55,7 +56,7 @@ class Embedder(object):
     def load_and_preprocess_data(self, reduced=False, embed_size=50):
         print("Loading {}data...".format("(reduced) " if reduced else ''), end='')
         start = time.time()
-        learning_set = self.read_conll(os.path.join(self.data_path, self.train_file),
+        learning_set = self.read_conll(os.path.join('', self.train_file),
                                        lowercase=self.lowercase)
         if reduced:
             learning_set = learning_set[:1000]

@@ -25,10 +25,8 @@ class Config(object):
     get the hyperparameter settings.
     """
     n_classes = 17
-    n_epochs = 10
-    lr = 0.0005
 
-    def __init__(self):
+    def __init__(self, args):
         name = type(self).__name__
         output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
         if not os.path.exists(output_path):
@@ -37,6 +35,10 @@ class Config(object):
         self.eval_output = output_path + "results.txt"
         self.log_output = output_path + "log"
         self.conll_output = output_path + "window_predictions.conll"
+        # parameters passed by args
+        self.n_epochs = args.n_epochs
+        self.lr = args.learning_rate
+        self.batch_size = args.batch_size
 
 
 class NERModel(object):
