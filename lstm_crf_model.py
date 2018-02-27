@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 from ner_model import NERModel
+from lstm_model import LSTMModel
 from utils.minibatches import minibatches
 
 
@@ -34,13 +35,13 @@ def compute_transition_matrix(config, examples):
     for _, labels in examples:
         transit[0,labels[0]] += 1
         for i in range(len(labels)-1):
-            transit[labels[i], labels[i+1]] += 1
+            transit[labels[i]+1, labels[i+1]+1] += 1
         transit[labels[-1],config.n_classes+1] += 1
     transit = (transit.T * 1.0 / transit.sum(axis=1)).T
     return transit
 
 
-class LSTMConfig(object):
+class LSTMCRFConfig(object):
     """Holds model hyperparams and data information.
 
     The config class is used to store various hyperparameters and dataset
@@ -52,12 +53,9 @@ class LSTMConfig(object):
     n_classes = 17
     embed_size = 50
     hidden_size = 200
-    batch_size = 128
-    n_epochs = 10
-    lr = 0.0005
 
 
-class LSTMModel(NERModel):
+class LSTMCRFModel(LSTMModel):
     """
     Implements a feedforward neural network with an embedding layer and single hidden layer.
     This network will predict whether an input word is a Named Entity
@@ -148,6 +146,8 @@ class LSTMModel(NERModel):
             loss: A 0-d tensor (scalar)
         """
 
+        pred_with_transition?
+
         cross_entropy = tf.boolean_mask(
                 tf.nn.sparse_softmax_cross_entropy_with_logits(
                     labels=self.labels_placeholder,
@@ -178,5 +178,5 @@ class LSTMModel(NERModel):
         return train_op
 
     def fit(self, sess, saver, train_examples_raw, dev_examples_raw):
-        self.transition_matrix = compute_transition_matrix(self.config, train_examples_raw)
+        self.transition_matrix = tf.constant(compute_transition_matrix(self.config, train_examples_raw))
         return super().fit(sess, saver, train_examples_raw, dev_examples_raw)
