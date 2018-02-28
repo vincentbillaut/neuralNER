@@ -146,7 +146,7 @@ class LSTMCRFModel(LSTMModel):
             loss: A 0-d tensor (scalar)
         """
 
-        pred_with_transition?
+        # pred_with_transition?
 
         cross_entropy = tf.boolean_mask(
                 tf.nn.sparse_softmax_cross_entropy_with_logits(
