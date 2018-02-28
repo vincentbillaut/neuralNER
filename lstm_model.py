@@ -14,9 +14,11 @@ class LSTMConfig(Config):
     get the hyperparameter settings.
     """
     n_features = 0
-    n_classes = 17
-    embed_size = 50
     max_length = 120
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.extra_layer = args.extra_layer
 
 
 class LSTMModel(NERModel):
@@ -157,16 +159,19 @@ class LSTMModel(NERModel):
                                            initial_state=initial_state,
                                            dtype=tf.float32)
 
-        U = tf.get_variable("U",
-                            shape=(self.config.hidden_size, self.config.n_classes),
-                            initializer=initializer)
-        b2 = tf.get_variable("b2",
-                             shape=self.config.n_classes,
-                             initializer=tf.constant_initializer())
+        if self.config.extra_layer:
+            U = tf.get_variable("U",
+                                shape=(self.config.hidden_size, self.config.n_classes),
+                                initializer=initializer)
+            b2 = tf.get_variable("b2",
+                                 shape=self.config.n_classes,
+                                 initializer=tf.constant_initializer())
 
-        inline_outputs = tf.reshape(outputs, shape=(-1, self.config.hidden_size))
-        inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
-        preds = tf.reshape(inline_preds, shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
+            inline_outputs = tf.reshape(outputs, shape=(-1, self.config.hidden_size))
+            inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
+            preds = tf.reshape(inline_preds, shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
+        else:
+            preds = tf.sigmoid(outputs)
 
         # ###
         # inline_x = tf.reshape(x, shape=(-1, self.config.embed_size))

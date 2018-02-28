@@ -25,6 +25,7 @@ class Config(object):
     get the hyperparameter settings.
     """
     n_classes = 17
+    embed_size = 50
 
     def __init__(self, args):
         name = type(self).__name__

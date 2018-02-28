@@ -12,7 +12,6 @@ class NaiveConfig(Config):
     get the hyperparameter settings.
     """
     dropout = 0.5
-    embed_size = 50
 
 
 class NaiveModel(NERModel):
