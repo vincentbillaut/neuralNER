@@ -33,9 +33,9 @@ def main(reduced=False, mode="naive"):
         start = time.time()
 
         if mode == "naive":
-            model = NaiveModel(config, embeddings)
+            model = NaiveModel(config, embeddings, embedder)
         elif mode == "lstm":
-            model = LSTMModel(config, embeddings)
+            model = LSTMModel(config, embeddings, embedder)
         else:
             raise NotImplementedError("Invalid mode")
 
