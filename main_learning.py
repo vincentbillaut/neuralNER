@@ -62,6 +62,7 @@ if __name__ == '__main__':
     command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf"], default="naive", help="Type of model to use.")
     command_parser.add_argument('-vv', '--vectors', type=str, default="data/en-cw.txt", help="Path to word vectors file.")
     command_parser.add_argument('-b', '--batch_size', type=int, default=128, help="Size of batches.")
+    command_parser.add_argument('-h', '--hidden_size', type=int, default=200, help="Size of hidden layers.")
     command_parser.add_argument('-n', '--n_epochs', type=int, default=10, help="Number of epochs.")
     command_parser.add_argument('-t', '--tiny', action='store_true', help="Whether to run on reduced dataset.")
     command_parser.add_argument('-tf', '--train_fraction', type=float, default=.9, help="The fraction of the dataset to use for training.")

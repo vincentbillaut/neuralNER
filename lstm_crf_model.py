@@ -52,7 +52,6 @@ class LSTMCRFConfig(object):
     # n_features = 36
     n_classes = 17
     embed_size = 50
-    hidden_size = 200
 
 
 class LSTMCRFModel(LSTMModel):
@@ -157,7 +156,7 @@ class LSTMCRFModel(LSTMModel):
         #   - two dimensional (batch_size, pad_length)
         #   - for ex: pred[i,:] = [1,1,16,0,9,16] (elements are in [0, n_classes-1])
 
-        
+
 
 
         cross_entropy = tf.boolean_mask(

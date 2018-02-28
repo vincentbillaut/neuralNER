@@ -16,7 +16,6 @@ class LSTMConfig(Config):
     n_features = 3
     n_classes = 17
     embed_size = 50
-    hidden_size = 20
     max_length = 120
 
 

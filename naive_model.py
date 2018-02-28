@@ -13,8 +13,6 @@ class NaiveConfig(Config):
     """
     dropout = 0.5
     embed_size = 50
-    hidden_size = 200
-    batch_size = 128
 
 
 class NaiveModel(NERModel):

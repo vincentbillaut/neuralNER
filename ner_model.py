@@ -38,6 +38,7 @@ class Config(object):
         self.n_epochs = args.n_epochs
         self.lr = args.learning_rate
         self.batch_size = args.batch_size
+        self.hidden_size = args.hidden_size
 
 
 class NERModel(object):
