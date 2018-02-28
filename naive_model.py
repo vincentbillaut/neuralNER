@@ -55,28 +55,31 @@ class NaiveModel(NERModel):
         labels_placeholder: Labels placeholder tensor of shape (None, n_classes), type tf.float32
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
         """
-        self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
+        self.input_placeholder = tf.placeholder(tf.int32, (None, ))
         self.labels_placeholder = tf.placeholder(
-            tf.float32, (None, self.config.n_classes))
+            tf.int32, None)
+        self.mask_placeholder = tf.placeholder(tf.bool, None)
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
-    def create_feed_dict(self, inputs, labels_batch=None, dropout=0):
+    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
         """Creates the feed_dict for the dependency parser.
 
         Args:
             inputs_batch: A batch of input data.
+            mask_batch:   A batch of mask data.
             labels_batch: A batch of label data.
             dropout: Dropout rate.
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
-
-        feed_dict = {
-            self.input_placeholder: inputs,
-            self.dropout_placeholder: dropout
-        }
-        if labels_batch is not None:
-            feed_dict[self.labels_placeholder] = labels_batch
+        feed_dict = {}
+        for feed, placeholder in zip([inputs, labels_batch, mask_batch, dropout],
+                                     [self.input_placeholder,
+                                      self.labels_placeholder,
+                                      self.mask_placeholder,
+                                      self.dropout_placeholder]):
+            if feed is not None:
+                feed_dict[placeholder] = feed
 
         return feed_dict
 
@@ -122,6 +125,12 @@ class NaiveModel(NERModel):
 
         return pred
 
+    def add_predict_onehot(self):
+        return tf.argmax(self.pred, axis=1)
+
+    def add_predict_proba(self):
+        return tf.nn.softmax(self.pred, axis=1)
+
     def add_loss_op(self, pred):
         """Adds Ops for the loss function to the computational graph.
         In this case we are using cross entropy loss.
@@ -134,7 +143,7 @@ class NaiveModel(NERModel):
             loss: A 0-d tensor (scalar)
         """
 
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
             labels=self.labels_placeholder,
             logits=pred
         )

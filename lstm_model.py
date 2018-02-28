@@ -167,6 +167,9 @@ class LSTMModel(NERModel):
             [None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
         return preds
 
+    def add_predict_onehot(self):
+        return tf.argmax(self.pred, axis=2)
+
     def add_loss_op(self, pred):
         """Adds Ops for the loss function to the computational graph.
         In this case we are using cross entropy loss.

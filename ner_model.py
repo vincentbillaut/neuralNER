@@ -27,13 +27,13 @@ class Config(object):
 
     def __init__(self, args):
         name = type(self).__name__
-        output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-        self.model_output = output_path + "model.weights"
-        self.eval_output = output_path + "results.txt"
-        self.log_output = output_path + "log"
-        self.conll_output = output_path + "window_predictions.conll"
+        self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
+        if not os.path.exists(self.output_path):
+            os.makedirs(self.output_path)
+        self.model_output = self.output_path + "model.weights"
+        self.eval_output = self.output_path + "results.txt"
+        self.log_output = self.output_path + "log"
+        self.conll_output = self.output_path + "window_predictions.conll"
         # parameters passed by args
         self.n_epochs = args.n_epochs
         self.lr = args.learning_rate
@@ -59,7 +59,7 @@ class NERModel(object):
         """
         raise NotImplementedError("Each Model must re-implement this method.")
 
-    def create_feed_dict(self, inputs_batch, labels_batch=None, mask_batch=None):
+    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
         """Creates the feed_dict for one step of training.
 
         A feed_dict takes the form of:
@@ -272,10 +272,16 @@ class NERModel(object):
             # Note that get_minibatches could either return a list, or a list of list
             # [features, labels]. This makes expanding tuples into arguments (* operator) handy
 
+            losses = []
             for i, minibatch in enumerate(
                     minibatches2(train_examples, self.config.batch_size, self.labelsHandler.num_labels())):
                 loss = self.train_on_batch(sess, *minibatch)
+                losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
+
+            with open(self.config.output_path + "losses.los", "w") as f:
+                for item in losses:
+                    f.write("%s\n" % item)
 
             logger.info("Evaluating on development data")
             token_cm, entity_scores = self.evaluate(sess, dev_examples, dev_examples_raw)
