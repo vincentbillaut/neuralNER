@@ -32,13 +32,13 @@ def main(args):
 
         if args.model == "naive":
             config = NaiveConfig(args)
-            model = NaiveModel(config, embeddings)
+            model = NaiveModel(config, embeddings, embedder)
         elif args.model == "lstm":
             config = LSTMConfig(args)
-            model = LSTMModel(config, embeddings)
+            model = LSTMModel(config, embeddings, embedder)
         elif args.model == "lstmcrf":
             config = LSTMCRFConfig(args)
-            model = LSTMCRFModel(config, embeddings)
+            model = LSTMCRFModel(config, embeddings, embedder)
 
         init_op = tf.global_variables_initializer()
         saver = tf.train.Saver()

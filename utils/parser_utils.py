@@ -2,6 +2,8 @@
 You do not need to read/understand this code
 """
 
+import numpy as np
+
 P_PREFIX = '<p>:'
 L_PREFIX = '<l>:'
 UNK = '<UNK>'
@@ -93,16 +95,17 @@ def get_chunks(seq, default):
         chunks.append(chunk)
     return chunks
 
+
 def window_iterator(seq, n=1, beg="<s>", end="</s>"):
     """
     Iterates through seq by returning windows of length 2n+1
     """
     for i in range(len(seq)):
-        l = max(0, i-n)
-        r = min(len(seq), i+n+1)
+        l = max(0, i - n)
+        r = min(len(seq), i + n + 1)
         ret = seq[l:r]
         if i < n:
-            ret = [beg,] * (n-i) + ret
-        if i+n+1 > len(seq):
-            ret = ret + [end,] * (i+n+1 - len(seq))
+            ret = np.concatenate([[beg] * (n - i), ret])
+        if i + n + 1 > len(seq):
+            ret = np.concatenate([ret, [end] * (i + n + 1 - len(seq))])
         yield ret

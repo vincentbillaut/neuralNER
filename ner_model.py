@@ -5,10 +5,9 @@ from datetime import datetime
 import tensorflow as tf
 
 from utils.ConfusionMatrix import ConfusionMatrix
-from utils.Embedder import Embedder
 from utils.LabelsHandler import LabelsHandler
 from utils.Progbar import Progbar
-from utils.minibatches import minibatches
+from utils.minibatches import minibatches, minibatches2
 from utils.parser_utils import get_chunks
 
 logger = logging.getLogger("NERproject")
@@ -28,13 +27,13 @@ class Config(object):
 
     def __init__(self, args):
         name = type(self).__name__
-        output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-        self.model_output = output_path + "model.weights"
-        self.eval_output = output_path + "results.txt"
-        self.log_output = output_path + "log"
-        self.conll_output = output_path + "window_predictions.conll"
+        self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
+        if not os.path.exists(self.output_path):
+            os.makedirs(self.output_path)
+        self.model_output = self.output_path + "model.weights"
+        self.eval_output = self.output_path + "results.txt"
+        self.log_output = self.output_path + "log"
+        self.conll_output = self.output_path + "window_predictions.conll"
         # parameters passed by args
         self.n_epochs = args.n_epochs
         self.lr = args.learning_rate
@@ -60,7 +59,7 @@ class NERModel(object):
         """
         raise NotImplementedError("Each Model must re-implement this method.")
 
-    def create_feed_dict(self, inputs_batch, labels_batch=None):
+    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
         """Creates the feed_dict for one step of training.
 
         A feed_dict takes the form of:
@@ -119,12 +118,16 @@ class NERModel(object):
         raise NotImplementedError("Each Model must re-implement this method.")
 
     def add_predict_onehot(self):
-        return tf.argmax(self.pred, axis=1)
+        return tf.argmax(self.pred, axis=2)
+
+    def add_predict_proba(self):
+        return tf.nn.softmax(self.pred, axis=2)
 
     def build(self):
         self.add_placeholders()
         self.pred = self.add_prediction_op()
         self.pred_onehot = self.add_predict_onehot()
+        self.pred_proba = self.add_predict_proba()
         self.loss = self.add_loss_op(self.pred)
         self.train_op = self.add_training_op(self.loss)
 
@@ -139,17 +142,21 @@ class NERModel(object):
         examples_with_mask = [(ex[0], ex[1], mask) for ex, mask in zip(examples, iter(lambda: True, False))]
         return examples_with_mask
 
-    def train_on_batch(self, sess, inputs_batch, labels_batch):
-        feed = self.create_feed_dict(inputs_batch.reshape(-1, 1), labels_batch=labels_batch)
+    def train_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
+        feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
+                                     labels_batch=labels_batch,
+                                     mask_batch=mask_batch)
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
         return loss
 
-    def test_on_batch(self, sess, inputs_batch, labels_batch):
-        feed = self.create_feed_dict(inputs_batch.reshape(-1, 1), labels_batch=labels_batch)
+    def test_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
+        feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
+                                     labels_batch=labels_batch,
+                                     mask_batch=mask_batch)
         loss = sess.run([self.loss], feed_dict=feed)
         return loss
 
-    def predict_on_batch(self, sess, inputs_batch):
+    def predict_on_batch(self, sess, inputs_batch, mask_batch):
         """Make predictions for the provided batch of data
 
         Args:
@@ -158,8 +165,23 @@ class NERModel(object):
         Returns:
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
-        feed = self.create_feed_dict(inputs_batch.reshape(-1, 1))
+        feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
+                                     mask_batch=mask_batch)
         predictions = sess.run(self.pred_onehot, feed_dict=feed)
+        return predictions
+
+    def predict_proba_on_batch(self, sess, inputs_batch, mask_batch):
+        """Make predictions for the provided batch of data
+
+        Args:
+            sess: tf.Session()
+            input_batch: np.ndarray of shape (n_samples, n_features)
+        Returns:
+            predictions: np.ndarray of shape (n_samples, n_classes)
+        """
+        feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
+                                     mask_batch=mask_batch)
+        predictions = sess.run(self.pred_proba, feed_dict=feed)
         return predictions
 
     # def run_epoch(self, sess, train_examples, dev_set):
@@ -218,15 +240,16 @@ class NERModel(object):
         """
         Reports the output of the model on examples (uses helper to featurize each example).
         """
-        if inputs is None:
-            inputs = self.preprocess_sequence_data(self.helper.vectorize(inputs_raw))
+        # if inputs is None:
+        #    inputs = self.preprocess_sequence_data(self.helper.vectorize(inputs_raw))
 
         preds = []
         prog = Progbar(target=1 + int(len(inputs) / self.config.batch_size))
-        for i, batch in enumerate(minibatches(inputs, self.config.batch_size, shuffle=False)):
+        for i, batch in enumerate(minibatches2(inputs, self.config.batch_size, shuffle=False)):
             # Ignore predict
-            batch = batch[:1] + batch[2:]
-            preds_ = self.predict_on_batch(sess, *batch)
+            # batch = batch[:1] + batch[2:]
+            preds_ = self.predict_on_batch(sess, inputs_batch=batch[0], mask_batch=batch[2])
+            preds_proba_ = self.predict_proba_on_batch(sess, inputs_batch=batch[0], mask_batch=batch[2])
             preds += list(preds_)
             prog.update(i + 1, [])
         return self.consolidate_predictions(inputs_raw, inputs, preds)
@@ -249,10 +272,16 @@ class NERModel(object):
             # Note that get_minibatches could either return a list, or a list of list
             # [features, labels]. This makes expanding tuples into arguments (* operator) handy
 
+            losses = []
             for i, minibatch in enumerate(
-                    minibatches(train_examples, self.config.batch_size, self.labelsHandler.num_labels())):
+                    minibatches2(train_examples, self.config.batch_size, self.labelsHandler.num_labels())):
                 loss = self.train_on_batch(sess, *minibatch)
+                losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
+
+            with open(self.config.output_path + "losses.los", "w") as f:
+                for item in losses:
+                    f.write("%s\n" % item)
 
             logger.info("Evaluating on development data")
             token_cm, entity_scores = self.evaluate(sess, dev_examples, dev_examples_raw)
@@ -270,9 +299,9 @@ class NERModel(object):
             print("")
         return best_score
 
-    def __init__(self, config, pretrained_embeddings):
+    def __init__(self, config, pretrained_embeddings, embedder):
         self.pretrained_embeddings = pretrained_embeddings
         self.config = config
         self.build()
         self.labelsHandler = LabelsHandler()
-        self.embedder = Embedder()
+        self.embedder = embedder

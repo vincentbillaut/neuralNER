@@ -59,7 +59,7 @@ class Embedder(object):
         learning_set = self.read_conll(os.path.join('', self.train_file),
                                        lowercase=self.lowercase)
         if reduced:
-            learning_set = learning_set[:1000]
+            learning_set = learning_set[:5000]
 
         print("took {:.2f} seconds".format(time.time() - start))
 
@@ -92,3 +92,9 @@ class Embedder(object):
         print("took {:.2f} seconds".format(time.time() - start))
 
         return embeddings_matrix, self.tok2id, learning_set_embedded_labelled
+
+    def start_token_id(self):
+        return self.tok2id[self.start_token]
+
+    def end_token_id(self):
+        return self.tok2id[self.end_token]

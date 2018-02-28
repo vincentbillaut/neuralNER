@@ -1,9 +1,11 @@
 import tensorflow as tf
+import numpy as np
 
-from ner_model import NERModel
+from ner_model import NERModel, Config
+from utils.parser_utils import window_iterator
 
 
-class LSTMConfig(object):
+class LSTMConfig(Config):
     """Holds model hyperparams and data information.
 
     The config class is used to store various hyperparameters and dataset
@@ -11,10 +13,10 @@ class LSTMConfig(object):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    n_features = 1
+    n_features = 3
     n_classes = 17
     embed_size = 50
-    hidden_size = 200
+    hidden_size = 20
     max_length = 120
 
 
@@ -43,11 +45,11 @@ class LSTMModel(NERModel):
 
         # Use this zero vector when padding sequences.
         zero_vector = [0] * self.config.n_features
-        zero_label = 4  # corresponds to the 'O' tag
+        zero_label = self.labelsHandler.noneIndex()  # corresponds to the 'O' tag
 
         for sentence, labels in data:
             paddedSentence = sentence[:max_length] + [zero_vector] * (max_length - len(sentence))
-            paddedLabels = labels[:max_length] + [zero_label] * (max_length - len(sentence))
+            paddedLabels = np.concatenate([labels[:max_length], [zero_label] * (max_length - len(sentence))])
             mask = [True] * min(len(sentence), max_length) + [False] * (max_length - len(sentence))
             ret.append((paddedSentence, paddedLabels, mask))
         return ret
@@ -58,14 +60,14 @@ class LSTMModel(NERModel):
             """
             ret = []
             for sentence, labels in data:
-                from utils.parser_utils import window_iterator
                 sentence_ = []
                 for window in window_iterator(sentence, window_size, beg=start, end=end):
-                    sentence_.append(sum(window, []))
+                    sentence_.append(window)  # sum(window, []))
                 ret.append((sentence_, labels))
             return ret
 
-        examples = featurize_windows(examples, self.embedder.start_token, self.embedder.end_token)
+        examples = featurize_windows(examples,
+                                     self.embedder.start_token_id(), self.embedder.end_token_id())
         return self.pad_sequences(examples, self.config.max_length)
 
     def consolidate_predictions(self, examples_raw, examples, preds):
@@ -91,9 +93,8 @@ class LSTMModel(NERModel):
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
         mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
         """
-        self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
-        self.labels_placeholder = tf.placeholder(
-            tf.float32, (None, self.config.n_classes))
+        self.input_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length, self.config.n_features))
+        self.labels_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length))
         self.mask_placeholder = tf.placeholder(tf.bool, [None, self.config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
@@ -143,34 +144,31 @@ class LSTMModel(NERModel):
 
         x = self.add_embedding()
         dropout_rate = self.dropout_placeholder
-        cell = tf.contrib.rnn.LSTMCell(num_units=self.config.hidden_size)
-        preds = []
 
-        for t in range(self.config.max_length):
-            U = tf.get_variable("U",
-                                shape=(self.config.hidden_size, self.config.n_classes),
-                                initializer=tf.contrib.layers.xavier_initializer())
-            b2 = tf.get_variable("b2",
-                                 shape=self.config.n_classes,
-                                 initializer=tf.constant_initializer())
-            hidden_state = tf.zeros(shape=(tf.shape(x)[0], self.config.hidden_size))
+        cell = tf.nn.rnn_cell.LSTMCell(num_units=self.config.hidden_size)
+        dropout_cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=1., output_keep_prob=1. - dropout_rate)
+        initial_state = dropout_cell.zero_state(tf.shape(x)[0], dtype=tf.float32)
 
-            with tf.variable_scope("LSTM"):
-                for time_step in range(self.config.max_length):
-                    o, hidden_state = cell(
-                        tf.reshape(x[:, time_step, :], shape=(-1, self.config.n_features * self.config.embed_size)),
-                        hidden_state, "LSTM")
-                    tf.get_variable_scope().reuse_variables()
-                    oDrop = tf.nn.dropout(o, keep_prob=dropout_rate)
-                    pred = tf.matmul(oDrop, U) + b2
-                    preds.append(pred)
+        outputs, state = tf.nn.dynamic_rnn(dropout_cell, x,
+                                           initial_state=initial_state,
+                                           dtype=tf.float32)
 
-        preds = tf.concat([tf.reshape(pred, shape=(-1, 1, self.config.n_classes)) for pred in preds], axis=1)
+        U = tf.get_variable("U",
+                            shape=(self.config.hidden_size, self.config.n_classes),
+                            initializer=tf.contrib.layers.xavier_initializer())
+        b2 = tf.get_variable("b2",
+                             shape=self.config.n_classes,
+                             initializer=tf.constant_initializer())
+
+        preds = tf.nn.sigmoid(tf.tensordot(outputs, U, axes=[2, 0]) + b2)
 
         assert preds.get_shape().as_list() == [None, self.config.max_length,
                                                self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format(
             [None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
         return preds
+
+    def add_predict_onehot(self):
+        return tf.argmax(self.pred, axis=2)
 
     def add_loss_op(self, pred):
         """Adds Ops for the loss function to the computational graph.
@@ -183,20 +181,10 @@ class LSTMModel(NERModel):
         Returns:
             loss: A 0-d tensor (scalar)
         """
-        # loss = tf.reduce_mean(
-        #     tf.boolean_mask(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.labels_placeholder,
-        #                                                                    logits=preds),
-        #                     self.mask_placeholder))
-        # ### END YOUR CODE
-        # return loss
-
         cross_entropy = tf.boolean_mask(
-            tf.nn.sparse_softmax_cross_entropy_with_logits(
-                labels=self.labels_placeholder,
-                logits=pred
-            ),
-            self.mask_placeholder
-        )
+            #tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.labels_placeholder, logits=pred),
+            tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.labels_placeholder, logits=pred),
+            self.mask_placeholder)
         loss = tf.reduce_mean(cross_entropy)
 
         return loss
