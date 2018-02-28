@@ -171,21 +171,7 @@ class LSTMModel(NERModel):
             inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
             preds = tf.reshape(inline_preds, shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
         else:
-            preds = tf.sigmoid(outputs)
-
-        # ###
-        # inline_x = tf.reshape(x, shape=(-1, self.config.embed_size))
-        # W = tf.Variable(initializer(shape=[self.config.embed_size, self.config.hidden_size]))
-        # U = tf.Variable(initializer(shape=[self.config.hidden_size, self.config.n_classes]))
-        #
-        # b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1")
-        # b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2")
-        #
-        # h = tf.nn.relu(tf.matmul(inline_x, W) + b1)
-        # h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
-        # inline_preds = tf.matmul(h_drop, U) + b2
-        # preds = tf.reshape(inline_preds, shape=(tf.shape(x)[0], self.config.max_length, self.config.n_classes))
-        # ###
+            preds = tf.nn.sigmoid(outputs)
 
         assert preds.get_shape().as_list() == [None, self.config.max_length,
                                                self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format(
