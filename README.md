@@ -22,6 +22,17 @@ srun  --partition=k80 --gres=gpu:1 --time=<minutes> --pty bash
 ```
 for < minutes >, easy to go up to 270, then we get a hold.
 
+
+Load components
+```bash
+module purge
+
+module load cuda90/toolkit/9.0.176
+
+module load cudnn/7.0
+```
+
+
 Run the scripts
 ```zsh
 python3.6 main_learning.py train

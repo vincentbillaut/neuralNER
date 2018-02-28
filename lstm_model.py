@@ -1,8 +1,13 @@
 import tensorflow as tf
 import numpy as np
+import logging
 
 from ner_model import NERModel, Config
 from utils.parser_utils import window_iterator
+
+logger = logging.getLogger("NERproject")
+logger.setLevel(logging.DEBUG)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
 class LSTMConfig(Config):
@@ -19,6 +24,10 @@ class LSTMConfig(Config):
     def __init__(self, args):
         super().__init__(args)
         self.extra_layer = args.extra_layer
+        if (not self.extra_layer) and (self.hidden_size != self.labelsHandler.num_labels()):
+            logger.info("Without extra layer (no -e), hidden_size forced to 17.")
+            self.hidden_size = self.labelsHandler.num_labels()
+
 
 
 class LSTMModel(NERModel):
