@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from datetime import datetime
@@ -7,7 +8,7 @@ import tensorflow as tf
 from utils.ConfusionMatrix import ConfusionMatrix
 from utils.LabelsHandler import LabelsHandler
 from utils.Progbar import Progbar
-from utils.minibatches import minibatches, minibatches2
+from utils.minibatches import minibatches2
 from utils.parser_utils import get_chunks
 
 logger = logging.getLogger("NERproject")
@@ -28,8 +29,15 @@ class Config(object):
     def __init__(self, args):
         name = type(self).__name__
         self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
+
+        logger.info("starting job at " + self.output_path)
         if not os.path.exists(self.output_path):
             os.makedirs(self.output_path)
+
+        with open(os.path.join(self.output_path, "params.json"), "w") as f:
+            dico = vars(args)
+            del dico['func']
+            json.dump(dico, f)
         self.model_output = self.output_path + "model.weights"
         self.eval_output = self.output_path + "results.txt"
         self.log_output = self.output_path + "log"

@@ -2,6 +2,7 @@ import os
 import time
 
 import numpy as np
+from functools import reduce
 
 from utils.LabelsHandler import LabelsHandler
 
@@ -64,8 +65,8 @@ class Embedder(object):
 
         print("Generating tokens...", end='')
         start = time.time()
-        unique_words = frozenset().union(*[set(sentence[0]) for sentence in learning_set],
-                                         {self.start_token, self.end_token})
+        unique_words = reduce(lambda x, y: x | y, [set(sentence[0]) for sentence in learning_set] +
+                              [{self.start_token, self.end_token}])
         self.tok2id = {l: i for (i, l) in enumerate(unique_words)}
         learning_set_embedded = [(self.embed_sentence(sentence), label) for sentence, label in learning_set]
 

@@ -143,8 +143,9 @@ class LSTMModel(NERModel):
 
         x = self.add_embedding()
         dropout_rate = self.dropout_placeholder
+        initializer = tf.contrib.layers.xavier_initializer()
 
-        cell = tf.nn.rnn_cell.LSTMCell(num_units=self.config.hidden_size)
+        cell = tf.nn.rnn_cell.LSTMCell(num_units=self.config.hidden_size, initializer=initializer)
         dropout_cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=1., output_keep_prob=1. - dropout_rate)
         initial_state = dropout_cell.zero_state(tf.shape(x)[0], dtype=tf.float32)
 
@@ -154,7 +155,7 @@ class LSTMModel(NERModel):
 
         U = tf.get_variable("U",
                             shape=(self.config.hidden_size, self.config.n_classes),
-                            initializer=tf.contrib.layers.xavier_initializer())
+                            initializer=initializer)
         b2 = tf.get_variable("b2",
                              shape=self.config.n_classes,
                              initializer=tf.constant_initializer())
