@@ -193,22 +193,6 @@ class NERModel(object):
         predictions = sess.run(self.pred_proba, feed_dict=feed)
         return predictions
 
-    # def run_epoch(self, sess, train_examples, dev_set):
-    #     n_minibatches = 1 + len(train_examples) / self.config.batch_size
-    #     prog = tf.keras.utils.Progbar(target=n_minibatches)
-    #     for i, (train_x, train_y) in enumerate(minibatches(train_examples, self.config.batch_size)):
-    #         loss = self.train_on_batch(sess, train_x, train_y)
-    #         prog.update(i + 1, [("train loss", loss)], force=i + 1 == n_minibatches)
-    #
-    #     for batch in minibatches(dev_set, dev_set.shape[0]):
-    #         break
-    #     loss = self.test_on_batch(sess, *batch)
-    #     # print("Evaluating on dev set", end=' ')
-    #     # dev_UAS, _ = parser.parse(dev_set)
-    #     # print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
-    #     # return dev_UAS
-    #     return - loss[0]
-
     def evaluate(self, sess, examples, examples_raw):
         """Evaluates model performance on @examples.
 
@@ -249,14 +233,10 @@ class NERModel(object):
         """
         Reports the output of the model on examples (uses helper to featurize each example).
         """
-        # if inputs is None:
-        #    inputs = self.preprocess_sequence_data(self.helper.vectorize(inputs_raw))
 
         preds = []
         prog = Progbar(target=1 + int(len(inputs) / self.config.batch_size))
         for i, batch in enumerate(minibatches2(inputs, self.config.batch_size, shuffle=False)):
-            # Ignore predict
-            # batch = batch[:1] + batch[2:]
             preds_ = self.predict_on_batch(sess, inputs_batch=batch[0], mask_batch=batch[2])
             preds_proba_ = self.predict_proba_on_batch(sess, inputs_batch=batch[0], mask_batch=batch[2])
             preds += list(preds_)
@@ -283,7 +263,7 @@ class NERModel(object):
 
             losses = []
             for i, minibatch in enumerate(
-                    minibatches2(train_examples, self.config.batch_size, self.labelsHandler.num_labels())):
+                    minibatches2(train_examples, self.config.batch_size)):
                 loss = self.train_on_batch(sess, *minibatch)
                 losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])

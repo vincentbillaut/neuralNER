@@ -43,7 +43,7 @@ class LSTMModel(NERModel):
         ret = []
 
         # Use this zero vector when padding sequences.
-        zero_vector = [0] * (2 * self.config.n_features + 1)
+        zero_vector = [self.embedder.null_token_id()] * (2 * self.config.n_features + 1)
         zero_label = self.labelsHandler.noneIndex()  # corresponds to the 'O' tag
 
         for sentence, labels in data:
@@ -66,7 +66,8 @@ class LSTMModel(NERModel):
             return ret
 
         examples = featurize_windows(examples,
-                                     self.embedder.start_token_id(), self.embedder.end_token_id(), self.config.n_features)
+                                     self.embedder.start_token_id(), self.embedder.end_token_id(),
+                                     self.config.n_features)
         return self.pad_sequences(examples, self.config.max_length)
 
     def consolidate_predictions(self, examples_raw, examples, preds):
@@ -92,12 +93,13 @@ class LSTMModel(NERModel):
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
         mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
         """
-        self.input_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length, 2 * self.config.n_features + 1))
+        self.input_placeholder = tf.placeholder(tf.int32,
+                                                (None, self.config.max_length, 2 * self.config.n_features + 1))
         self.labels_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length))
         self.mask_placeholder = tf.placeholder(tf.bool, [None, self.config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
-    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
+    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0.):
         """Creates the feed_dict for the dependency parser.
 
         Args:
@@ -130,7 +132,9 @@ class LSTMModel(NERModel):
         embeddingTable = tf.Variable(initial_value=self.pretrained_embeddings)
         embeddingsTensor = tf.nn.embedding_lookup(embeddingTable, self.input_placeholder)
         embeddings = tf.reshape(embeddingsTensor,
-                                shape=(-1, self.config.max_length, (2 * self.config.n_features + 1) * self.config.embed_size))
+                                shape=(
+                                    -1, self.config.max_length,
+                                    (2 * self.config.n_features + 1) * self.config.embed_size))
         ### END YOUR CODE
         return embeddings
 
@@ -160,7 +164,23 @@ class LSTMModel(NERModel):
                              shape=self.config.n_classes,
                              initializer=tf.constant_initializer())
 
-        preds = tf.nn.sigmoid(tf.tensordot(outputs, U, axes=[2, 0]) + b2)
+        inline_outputs = tf.reshape(outputs, shape=(-1, self.config.hidden_size))
+        inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
+        preds = tf.reshape(inline_preds, shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
+
+        # ###
+        # inline_x = tf.reshape(x, shape=(-1, self.config.embed_size))
+        # W = tf.Variable(initializer(shape=[self.config.embed_size, self.config.hidden_size]))
+        # U = tf.Variable(initializer(shape=[self.config.hidden_size, self.config.n_classes]))
+        #
+        # b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1")
+        # b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2")
+        #
+        # h = tf.nn.relu(tf.matmul(inline_x, W) + b1)
+        # h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
+        # inline_preds = tf.matmul(h_drop, U) + b2
+        # preds = tf.reshape(inline_preds, shape=(tf.shape(x)[0], self.config.max_length, self.config.n_classes))
+        # ###
 
         assert preds.get_shape().as_list() == [None, self.config.max_length,
                                                self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format(
@@ -182,7 +202,6 @@ class LSTMModel(NERModel):
             loss: A 0-d tensor (scalar)
         """
         cross_entropy = tf.boolean_mask(
-            #tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.labels_placeholder, logits=pred),
             tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.labels_placeholder, logits=pred),
             self.mask_placeholder)
         loss = tf.reduce_mean(cross_entropy)

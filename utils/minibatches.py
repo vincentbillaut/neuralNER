@@ -50,6 +50,7 @@ def get_minibatches(data, minibatch_size, shuffle):
 def _minibatch(data, minibatch_idx):
     return data[minibatch_idx] if type(data) is np.ndarray else [data[i] for i in minibatch_idx]
 
+
 # def test_all_close(name, actual, expected):
 #     if actual.shape != expected.shape:
 #         raise ValueError("{:} failed, expected output to have shape {:} but has shape {:}"
@@ -58,7 +59,6 @@ def _minibatch(data, minibatch_idx):
 #         raise ValueError("{:} failed, expected {:} but value is {:}".format(name, expected, actual))
 #     else:
 #         print(name, "passed!")
-
 
 
 def get_minibatches2(data, minibatch_size, shuffle=True):
@@ -103,12 +103,6 @@ def minibatch2(data, minibatch_idx):
     return data[minibatch_idx] if type(data) is np.ndarray else [data[i] for i in minibatch_idx]
 
 
-
-def minibatches2(data, batch_size, shuffle=True, num_classes=17):
-    # y = np.array([d[1] for d in data])
-    # one_hot = np.zeros((y.size, num_classes))
-    # for index, x in np.ndenumerate(a):
-    # one_hot[np.arange(y.size), y] = 1
-
+def minibatches2(data, batch_size, shuffle=False):
     batches = [np.array(col) for col in zip(*data)]
     return get_minibatches2(batches, batch_size, shuffle)

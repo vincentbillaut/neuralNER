@@ -18,6 +18,7 @@ class Embedder(object):
 
     start_token = "<s>"
     end_token = "</s>"
+    null_token = "<null>"
 
     def __init__(self, args):
         self.train_file = args.data_train
@@ -59,14 +60,14 @@ class Embedder(object):
         learning_set = self.read_conll(os.path.join('', self.train_file),
                                        lowercase=self.lowercase)
         if reduced:
-            learning_set = learning_set[:5000]
+            learning_set = learning_set[:500]
 
         print("took {:.2f} seconds".format(time.time() - start))
 
         print("Generating tokens...", end='')
         start = time.time()
         unique_words = reduce(lambda x, y: x | y, [set(sentence[0]) for sentence in learning_set] +
-                              [{self.start_token, self.end_token}])
+                              [{self.start_token, self.end_token, self.null_token}])
         self.tok2id = {l: i for (i, l) in enumerate(unique_words)}
         learning_set_embedded = [(self.embed_sentence(sentence), label) for sentence, label in learning_set]
 
@@ -98,3 +99,6 @@ class Embedder(object):
 
     def end_token_id(self):
         return self.tok2id[self.end_token]
+
+    def null_token_id(self):
+        return self.tok2id[self.null_token]

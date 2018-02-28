@@ -50,7 +50,7 @@ class NaiveModel(NERModel):
 
         input_placeholder: Input placeholder tensor of  shape (None, 1), type tf.int32
             containing index of our word in the embedding
-        labels_placeholder: Labels placeholder tensor of shape (None, n_classes), type tf.float32
+        labels_placeholder: Labels placeholder tensor of shape (None, 1), type tf.int32
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
         """
         self.input_placeholder = tf.placeholder(tf.int32, (None, ))
