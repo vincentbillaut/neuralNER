@@ -280,7 +280,7 @@ class NERModel(object):
                 losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
 
-            with open(self.config.output_path + "losses.los", "w") as f:
+            with open(self.config.output_path + "losses.los", "a") as f:
                 for item in losses:
                     f.write("%s\n" % item)
 

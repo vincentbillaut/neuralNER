@@ -1,13 +1,13 @@
-import os
-import time
-
 import argparse
+import os
+import sys
+import time
 
 import tensorflow as tf
 
-from naive_model import NaiveConfig, NaiveModel
-from lstm_model import LSTMConfig, LSTMModel
 from lstm_crf_model import LSTMCRFConfig, LSTMCRFModel
+from lstm_model import LSTMConfig, LSTMModel
+from naive_model import NaiveConfig, NaiveModel
 from utils.Embedder import Embedder
 
 

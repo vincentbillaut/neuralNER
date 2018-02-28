@@ -13,7 +13,7 @@ class LSTMConfig(Config):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    n_features = 1
+    n_features = 0
     n_classes = 17
     embed_size = 50
     max_length = 120
