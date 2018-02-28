@@ -3,6 +3,30 @@
 - Vincent Billaut   MS in Statistics, Stanford University
 - Marc Thibault     MS in ICME, Stanford University
 
+## Shell instructions to run on GPU
+
+SSH in
+```bash
+ssh [username]@icme-gpu.stanford.edu
+...
+```
+
+Screen in
+```bash
+screen -R neuralner
+```
+
+Ask for resources
+```bash
+srun  --partition=k80 --gres=gpu:1 --time=<minutes> --pty bash
+```
+for < minutes >, easy to go up to 270, then we get a hold.
+
+Run the scripts
+```zsh
+python3.6 main_learning.py train
+```
+
 ## Project overview
 
 ### Problem description
