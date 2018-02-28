@@ -13,7 +13,7 @@ class LSTMConfig(Config):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    n_features = 3
+    n_features = 1
     n_classes = 17
     embed_size = 50
     max_length = 120
@@ -43,11 +43,11 @@ class LSTMModel(NERModel):
         ret = []
 
         # Use this zero vector when padding sequences.
-        zero_vector = [0] * self.config.n_features
+        zero_vector = [0] * (2 * self.config.n_features + 1)
         zero_label = self.labelsHandler.noneIndex()  # corresponds to the 'O' tag
 
         for sentence, labels in data:
-            paddedSentence = sentence[:max_length] + [zero_vector] * (max_length - len(sentence))
+            paddedSentence = np.concatenate([sentence[:max_length], [zero_vector] * (max_length - len(sentence))])
             paddedLabels = np.concatenate([labels[:max_length], [zero_label] * (max_length - len(sentence))])
             mask = [True] * min(len(sentence), max_length) + [False] * (max_length - len(sentence))
             ret.append((paddedSentence, paddedLabels, mask))
@@ -66,7 +66,7 @@ class LSTMModel(NERModel):
             return ret
 
         examples = featurize_windows(examples,
-                                     self.embedder.start_token_id(), self.embedder.end_token_id())
+                                     self.embedder.start_token_id(), self.embedder.end_token_id(), self.config.n_features)
         return self.pad_sequences(examples, self.config.max_length)
 
     def consolidate_predictions(self, examples_raw, examples, preds):
@@ -92,7 +92,7 @@ class LSTMModel(NERModel):
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
         mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
         """
-        self.input_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length, self.config.n_features))
+        self.input_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length, 2 * self.config.n_features + 1))
         self.labels_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length))
         self.mask_placeholder = tf.placeholder(tf.bool, [None, self.config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
@@ -130,7 +130,7 @@ class LSTMModel(NERModel):
         embeddingTable = tf.Variable(initial_value=self.pretrained_embeddings)
         embeddingsTensor = tf.nn.embedding_lookup(embeddingTable, self.input_placeholder)
         embeddings = tf.reshape(embeddingsTensor,
-                                shape=(-1, self.config.max_length, self.config.n_features * self.config.embed_size))
+                                shape=(-1, self.config.max_length, (2 * self.config.n_features + 1) * self.config.embed_size))
         ### END YOUR CODE
         return embeddings
 
