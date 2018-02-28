@@ -146,11 +146,23 @@ class LSTMCRFModel(LSTMModel):
             loss: A 0-d tensor (scalar)
         """
 
+        y = self.labels_placeholder
+
         # pred_with_transition?
+        # y_i = softmax(...)
+        # y_i+1 = softmax(...)
+        # loss += y_i.T * A * y_i+1
+        #
+        # If we don't consider it one-hot, the pred is basically
+        #   - two dimensional (batch_size, pad_length)
+        #   - for ex: pred[i,:] = [1,1,16,0,9,16] (elements are in [0, n_classes-1])
+
+        
+
 
         cross_entropy = tf.boolean_mask(
                 tf.nn.sparse_softmax_cross_entropy_with_logits(
-                    labels=self.labels_placeholder,
+                    labels=y,
                     logits=pred
                 ),
                 self.mask_placeholder
