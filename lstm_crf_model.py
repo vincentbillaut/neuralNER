@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 from ner_model import NERModel
-from lstm_model import LSTMModel
+from lstm_model import LSTMModel, LSTMConfig
 from utils.minibatches import minibatches
 
 
@@ -41,7 +41,7 @@ def compute_transition_matrix(config, examples):
     return transit
 
 
-class LSTMCRFConfig(object):
+class LSTMCRFConfig(LSTMConfig):
     """Holds model hyperparams and data information.
 
     The config class is used to store various hyperparameters and dataset
