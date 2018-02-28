@@ -17,10 +17,7 @@ class LSTMConfig(Config):
     n_classes = 17
     embed_size = 50
     hidden_size = 20
-    batch_size = 128
-    n_epochs = 100
-    lr = 0.005
-    max_length = 120 # TODO cut dev examples too
+    max_length = 120
 
 
 class LSTMModel(NERModel):
