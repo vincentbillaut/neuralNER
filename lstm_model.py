@@ -24,9 +24,9 @@ class LSTMConfig(Config):
     def __init__(self, args):
         super().__init__(args)
         self.extra_layer = args.extra_layer
-        if (not self.extra_layer) and (self.hidden_size != self.labelsHandler.num_labels()):
+        if (not self.extra_layer) and (self.hidden_size != 17):
             logger.info("Without extra layer (no -e), hidden_size forced to 17.")
-            self.hidden_size = self.labelsHandler.num_labels()
+            self.hidden_size = 17
 
 
 
