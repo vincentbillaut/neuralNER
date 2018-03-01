@@ -6,7 +6,7 @@
 
 - Vincent Billaut, 	`vbillaut`, 	06225465, 	MS (Statistics)
 
-- Marc Thibault, 	`marcthib`, 	06227968, 	MS (ICME)
+	 Marc Thibault, 	`marcthib`, 	06227968, 	MS (ICME)
 
   ​
 
@@ -26,19 +26,19 @@ The dataset consists in **1.05M** labeled words (**150MB** csv file).
 
 ### Baseline and first models
 
-Our baseline model is a very simple **feed-forward neural network** with one hidden layer. It takes the inputs word by word, uses a GloVe word embedding and optimizes for cross entropy loss. 
+Our baseline model is a very simple **feed-forward neural network** with one hidden layer. It takes the inputs word by word, uses a GloVe word embedding and optimizes for cross entropy loss.
 
-Its main objective is to provide a sane first architecture to test our code pipeline and the different functionalities with have implemented to ease the benchmarking and development of more complex algorithms (shell argument parsing, base NERModel and Config classes that the other implementations will inherit from, ...). This was also a way to have some script to test our GPU configuration on, which we did successfully.
+Its main objective is to provide a sane first architecture to test our code pipeline and the different functionalities we have implemented to ease the benchmarking and development of more complex algorithms (shell argument parsing, base `NERModel` and `Config` classes that the other implementations will inherit from, ...). This was also a way to have some script to test our GPU configuration on, which we did successfully.
 
 In addition to this baseline, we have implemented two other models: a **simple LSTM**, and a **variation** of it. The simple LSTM consists in a basic LSTM cell, the output of which is directly taken as the prediction for our labels. The variation of this model is to simply add **an extra layer** on top, so that there is some "learning room" between the cell and the output layer. So far, on very small sets, the LSTM models don't perform well, and we're waiting for our larger runs on the whole dataset to see actual results, and to decide how to tune those hyper-parameters.
 
-### Evaluation 
+### Evaluation
 
 Our evaluation, much like in assignment 3, will be based on entity-level $F_1$ score, on a separated development set. Our goal will next be to examine some of the misclassified labels, and to conduct a more thorough error cases study.
 
 So far, our baseline (`Naive`) model ends up with a dev $F_1$ score around $0.7$, which is very decent for this task regarding how simple it is, but very far from what we aim to achieve (the main papers we consider hover around $0.9$ scores on this dataset).
 
-### Results 
+### Results
 
 | Model                               | CE loss | Entity-level $F_1$ score |
 | ----------------------------------- | ------- | ------------------------ |
@@ -48,11 +48,11 @@ So far, our baseline (`Naive`) model ends up with a dev $F_1$ score around $0.7$
 | `LSTM + extra_layer`                | $2.01$  | $ .23$                   |
 | `LSTM + extra_layer + extra_epochs` | $1.96$  | $.60$                    |
 
-From the most recent models we fitted, we see that the baseline works best both in train CE loss; as well as in dev entity-level $F_1$ score. 
+From the most recent models we fitted, we see that the baseline works best both in train CE loss and in dev entity-level $F_1$ score.
 
 However, the encouraging result is that, by pushing our LSTM model further into the epochs, we see an explosion in the dev set $F_1$ score. This means that the LSTM still has room for improvement, and might be more accurate than and eventually outperform the baseline with longer runs.
 
-![mileston_models_losses](/Users/marc/Documents/Dropbox/Stanford/Class/2ndQuarter/CS224N/project/neuralNER/submission/mileston_models_losses.png)
+![mileston_models_losses](/home/vincent/Documents/Stanford/1718_winter/CS224N/Project/neuralNER/submission/mileston_models_losses.png)
 
 ### Next steps
 
