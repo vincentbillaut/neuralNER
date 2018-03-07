@@ -48,6 +48,7 @@ class Config(object):
         self.lr = args.learning_rate
         self.batch_size = args.batch_size
         self.hidden_size = args.hidden_size
+        self.regularization = args.l2
 
 
 class NERModel(object):
@@ -108,6 +109,16 @@ class NERModel(object):
         """
         raise NotImplementedError("Each Model must re-implement this method.")
 
+    def add_regularization_op(self, loss, beta):
+        """Adds Ops to regularize the loss function to the computational graph.
+
+        Args:
+            loss: Loss tensor (a scalar).
+        Returns:
+            regularized_loss: A 0-d tensor (scalar) output
+        """
+        raise NotImplementedError("Each Model must re-implement this method.")
+
     def add_training_op(self, loss):
         """Sets up the training Ops.
 
@@ -139,7 +150,14 @@ class NERModel(object):
         self.pred_onehot = self.add_predict_onehot()
         self.pred_proba = self.add_predict_proba()
         self.loss = self.add_loss_op(self.pred)
-        self.train_op = self.add_training_op(self.loss)
+
+        if self.config.regularization is not None:
+            self.regularized_loss = self.add_regularization_op(
+                                                self.loss,
+                                                self.config.regularization)
+        else:
+            self.regularized_loss = self.loss
+        self.train_op = self.add_training_op(self.regularized_loss)
 
     def preprocess_sequence_data(self, examples):
         """Preprocess sequence data for the model.

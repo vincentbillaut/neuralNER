@@ -201,11 +201,28 @@ class LSTMModel(NERModel):
         Returns:
             loss: A 0-d tensor (scalar)
         """
+        y = self.labels_placeholder
+
         cross_entropy = tf.boolean_mask(
-            tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.labels_placeholder, logits=pred),
-            self.mask_placeholder)
+                tf.nn.sparse_softmax_cross_entropy_with_logits(
+                    labels=y,
+                    logits=pred
+                ),
+                self.mask_placeholder
+            )
         loss = tf.reduce_mean(cross_entropy)
 
+        return loss
+
+    def add_regularization_op(self, loss, beta):
+        """Adds Ops to regularize the loss function to the computational graph.
+
+        Args:
+            loss: Loss tensor (a scalar).
+        Returns:
+            regularized_loss: A 0-d tensor (scalar) output
+        """
+        # TODO: regularizers + regularized_loss
         return loss
 
     def add_training_op(self, loss):

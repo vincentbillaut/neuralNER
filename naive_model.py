@@ -122,6 +122,17 @@ class NaiveModel(NERModel):
 
         return pred
 
+    def add_regularization_op(self, loss, beta):
+        """Adds Ops to regularize the loss function to the computational graph.
+
+        Args:
+            loss: Loss tensor (a scalar).
+        Returns:
+            regularized_loss: A 0-d tensor (scalar) output
+        """
+        # TODO: regularizers + regularized_loss
+        return loss
+
     def add_predict_onehot(self):
         return tf.argmax(self.pred, axis=1)
 

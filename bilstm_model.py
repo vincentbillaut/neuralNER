@@ -78,45 +78,18 @@ class BiLSTMModel(LSTMModel):
         assert preds.get_shape().as_list() == [None, self.config.max_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
         return preds
 
-    def add_loss_op(self, pred):
-        """Adds Ops for the loss function to the computational graph.
-        In this case we are using cross entropy loss.
-        The loss should be averaged over all examples in the current minibatch.
+    def add_regularization_op(self, loss, beta):
+        """Adds Ops to regularize the loss function to the computational graph.
 
         Args:
-            pred: A tensor of shape (batch_size, n_classes) containing the output of the neural
-                  network before the softmax layer.
+            loss: Loss tensor (a scalar).
         Returns:
-            loss: A 0-d tensor (scalar)
+            regularized_loss: A 0-d tensor (scalar) output
         """
-
-        y = self.labels_placeholder
-
-        cross_entropy = tf.boolean_mask(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(
-                    labels=y,
-                    logits=pred
-                ),
-                self.mask_placeholder
-            )
-        loss = tf.reduce_mean(cross_entropy)
-
+        # TODO: regularizers + regularized_loss
+        # regularizers look like
+        # regularizers = tf.nn.l2_loss(weights_1) + tf.nn.l2_loss(weights_2) + ...
+        # with the weights being the weight parameters, model specific
+        #
+        # then regularized_loss = tf.reduce_mean(loss + beta * regularizers)
         return loss
-
-    def add_training_op(self, loss):
-        """Sets up the training Ops.
-
-        Creates an optimizer and applies the gradients to all trainable variables.
-        The Op returned by this function is what must be passed to the
-        `sess.run()` call to cause the model to train.
-
-        Args:
-            loss: Loss tensor, from cross_entropy_loss.
-        Returns:
-            train_op: The Op for training.
-        """
-
-        opt = tf.train.AdamOptimizer(learning_rate=self.config.lr)
-        train_op = opt.minimize(loss)
-
-        return train_op
