@@ -21,6 +21,9 @@ def main(args):
     embeddings, tok2idMap, learning_set = embedder.load_and_preprocess_data(args.tiny)
 
     # choosing train vs. test sets within our data
+    #TODO make a separate test set ; in order to report out-of-sample
+    #performance. Instead of 90% train and 10% dev, we'll do 80% train,
+    #10% dev and 10% test.
     train_set = learning_set[:int(len(learning_set) * args.train_fraction)]
     dev_set = learning_set[int(len(learning_set) * args.train_fraction):]
 
@@ -70,7 +73,7 @@ if __name__ == '__main__':
     command_parser.add_argument('-n', '--n_epochs', type=int, default=10, help="Number of epochs.")
 
     command_parser.add_argument('-t', '--tiny', action='store_true', help="Whether to run on reduced dataset.")
-    command_parser.add_argument('-e', '--extra_layer', action='store_true', help="Whether to add an extra layer on top (only for LSTM).")
+    command_parser.add_argument('-e', '--extra_layer', action='store_true', help="Whether to add an extra layer on top (for LSTM and BiLSTM).")
 
     command_parser.add_argument('-tf', '--train_fraction', type=float, default=.9, help="The fraction of the dataset to use for training.")
     command_parser.add_argument('-lr', '--learning_rate', type=float, default=0.0005, help="Learning rate.")

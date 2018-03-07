@@ -61,21 +61,19 @@ class BiLSTMModel(LSTMModel):
         #TODO maybe make the optional extra layer a *second* layer?
         # to go from concatenated outputs to prediction, there needs to be
         # an extra layer so the option as in LSTM doesn't make sense anymore
-        if True or self.config.extra_layer:
-            U = tf.get_variable("U",
-                                shape=(2 * self.config.hidden_size, self.config.n_classes),
-                                initializer=initializer)
-            b2 = tf.get_variable("b2",
-                                 shape=self.config.n_classes,
-                                 initializer=tf.constant_initializer())
+        # if True or self.config.extra_layer:
 
-            inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
-            inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
-            preds = tf.reshape(inline_preds, shape=(tf.shape(concat_output)[0], self.config.max_length, self.config.n_classes))
-        else:
-            preds = tf.nn.sigmoid(concat_output)
+        U = tf.get_variable("U",
+                            shape=(2 * self.config.hidden_size, self.config.n_classes),
+                            initializer=initializer)
+        b2 = tf.get_variable("b2",
+                             shape=self.config.n_classes,
+                             initializer=tf.constant_initializer())
 
+        inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
+        inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
 
+        preds = tf.reshape(inline_preds, shape=(tf.shape(concat_output)[0], self.config.max_length, self.config.n_classes))
 
         assert preds.get_shape().as_list() == [None, self.config.max_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
         return preds
