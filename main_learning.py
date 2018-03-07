@@ -8,6 +8,7 @@ import tensorflow as tf
 from lstm_crf_model import LSTMCRFConfig, LSTMCRFModel
 from lstm_model import LSTMConfig, LSTMModel
 from naive_model import NaiveConfig, NaiveModel
+from bilstm_model import BiLSTMConfig, BiLSTMModel
 from utils.Embedder import Embedder
 
 
@@ -39,6 +40,9 @@ def main(args):
         elif args.model == "lstmcrf":
             config = LSTMCRFConfig(args)
             model = LSTMCRFModel(config, embeddings, embedder)
+        elif args.model == "bilstm":
+            config = BiLSTMConfig(args)
+            model = BiLSTMModel(config, embeddings, embedder)
 
         init_op = tf.global_variables_initializer()
         saver = tf.train.Saver()
@@ -59,7 +63,7 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers()
 
     command_parser = subparsers.add_parser('train', help='')
-    command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf"], default="naive", help="Type of model to use.")
+    command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf", "bilstm"], default="naive", help="Type of model to use.")
     command_parser.add_argument('-vv', '--vectors', type=str, default="data/en-cw.txt", help="Path to word vectors file.")
     command_parser.add_argument('-b', '--batch_size', type=int, default=128, help="Size of batches.")
     command_parser.add_argument('-s', '--hidden_size', type=int, default=20, help="Size of hidden layers.")

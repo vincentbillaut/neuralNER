@@ -60,6 +60,9 @@ class LSTMCRFModel(LSTMModel):
     This network will predict whether an input word is a Named Entity
     """
 
+    def __init__(self):
+        raise NotImplementedError("Model to be completed before use.")
+
     def add_placeholders(self):
         """Generates placeholder variables to represent the input tensors
 
@@ -115,7 +118,7 @@ class LSTMCRFModel(LSTMModel):
         """Adds the unrolled LSTM
 
         Returns:
-            pred:   tf.Tensor of shape (batch_size, pad_length, n_classes)
+            pred:   tf.Tensor of shape (batch_size, max_length, n_classes)
         """
 
         x = self.add_embedding()
@@ -124,13 +127,13 @@ class LSTMCRFModel(LSTMModel):
 
         hidden_state = tf.constant(tf.zeros(self.config.hidden_size))
 
-        for t in range(self.config.pad_length):
+        for t in range(self.config.max_length):
             output, hidden_state = cell(self.input_placeholder, hidden_state)
             preds.append(output)
 
         pred = tf.stack(preds)
 
-        assert preds.get_shape().as_list() == [None, self.pad_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.pad_length, self.config.n_classes], preds.get_shape().as_list())
+        assert preds.get_shape().as_list() == [None, self.max_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.max_length, self.config.n_classes], preds.get_shape().as_list())
         return pred
 
     def add_loss_op(self, pred):
@@ -153,7 +156,7 @@ class LSTMCRFModel(LSTMModel):
         # loss += y_i.T * A * y_i+1
         #
         # If we don't consider it one-hot, the pred is basically
-        #   - two dimensional (batch_size, pad_length)
+        #   - two dimensional (batch_size, max_length)
         #   - for ex: pred[i,:] = [1,1,16,0,9,16] (elements are in [0, n_classes-1])
 
 

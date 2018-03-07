@@ -153,7 +153,7 @@ class LSTMModel(NERModel):
         """Adds the unrolled LSTM
 
         Returns:
-            pred:   tf.Tensor of shape (batch_size, pad_length, n_classes)
+            pred:   tf.Tensor of shape (batch_size, max_length, n_classes)
         """
 
         x = self.add_embedding()
