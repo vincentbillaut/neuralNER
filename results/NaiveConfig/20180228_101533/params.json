@@ -1,0 +1,1 @@
+{"n_epochs": 10, "batch_size": 128, "model": "naive", "data_train": "data/ner_dataset.csv", "learning_rate": 0.0005, "train_fraction": 0.9, "extra_layer": false, "vectors": "data/en-cw.txt", "tiny": true, "hidden_size": 20}
