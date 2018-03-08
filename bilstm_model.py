@@ -66,7 +66,7 @@ class BiLSTMModel(LSTMModel):
         U = tf.get_variable("U",
                             shape=(2 * self.config.hidden_size, self.config.n_classes),
                             initializer=initializer)
-        b2 = tf.get_variable("b2",
+        b2 = tf.get_variable("b2-noreg",
                              shape=self.config.n_classes,
                              initializer=tf.constant_initializer())
 
@@ -77,19 +77,3 @@ class BiLSTMModel(LSTMModel):
 
         assert preds.get_shape().as_list() == [None, self.config.max_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
         return preds
-
-    def add_regularization_op(self, loss, beta):
-        """Adds Ops to regularize the loss function to the computational graph.
-
-        Args:
-            loss: Loss tensor (a scalar).
-        Returns:
-            regularized_loss: A 0-d tensor (scalar) output
-        """
-        # TODO: regularizers + regularized_loss
-        # regularizers look like
-        # regularizers = tf.nn.l2_loss(weights_1) + tf.nn.l2_loss(weights_2) + ...
-        # with the weights being the weight parameters, model specific
-        #
-        # then regularized_loss = tf.reduce_mean(loss + beta * regularizers)
-        return loss

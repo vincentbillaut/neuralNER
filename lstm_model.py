@@ -29,7 +29,6 @@ class LSTMConfig(Config):
             self.hidden_size = 17
 
 
-
 class LSTMModel(NERModel):
     """
     Implements a feedforward neural network with an embedding layer and single hidden layer.
@@ -140,12 +139,11 @@ class LSTMModel(NERModel):
             embeddings: tf.Tensor of shape (None, 1*embed_size)
         """
 
-        embeddingTable = tf.Variable(initial_value=self.pretrained_embeddings)
+        embeddingTable = tf.Variable(initial_value=self.pretrained_embeddings, name="embeddingTable-noreg")
         embeddingsTensor = tf.nn.embedding_lookup(embeddingTable, self.input_placeholder)
         embeddings = tf.reshape(embeddingsTensor,
-                                shape=(
-                                    -1, self.config.max_length,
-                                    (2 * self.config.n_features + 1) * self.config.embed_size))
+                                shape=(-1, self.config.max_length,
+                                       (2 * self.config.n_features + 1) * self.config.embed_size))
         ### END YOUR CODE
         return embeddings
 
@@ -172,13 +170,14 @@ class LSTMModel(NERModel):
             U = tf.get_variable("U",
                                 shape=(self.config.hidden_size, self.config.n_classes),
                                 initializer=initializer)
-            b2 = tf.get_variable("b2",
+            b2 = tf.get_variable("b2-noreg",
                                  shape=self.config.n_classes,
                                  initializer=tf.constant_initializer())
 
             inline_outputs = tf.reshape(outputs, shape=(-1, self.config.hidden_size))
             inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
-            preds = tf.reshape(inline_preds, shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
+            preds = tf.reshape(inline_preds,
+                               shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
         else:
             preds = tf.nn.sigmoid(outputs)
 
@@ -204,25 +203,14 @@ class LSTMModel(NERModel):
         y = self.labels_placeholder
 
         cross_entropy = tf.boolean_mask(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(
-                    labels=y,
-                    logits=pred
-                ),
-                self.mask_placeholder
-            )
+            tf.nn.sparse_softmax_cross_entropy_with_logits(
+                labels=y,
+                logits=pred
+            ),
+            self.mask_placeholder
+        )
         loss = tf.reduce_mean(cross_entropy)
 
-        return loss
-
-    def add_regularization_op(self, loss, beta):
-        """Adds Ops to regularize the loss function to the computational graph.
-
-        Args:
-            loss: Loss tensor (a scalar).
-        Returns:
-            regularized_loss: A 0-d tensor (scalar) output
-        """
-        # TODO: regularizers + regularized_loss
         return loss
 
     def add_training_op(self, loss):

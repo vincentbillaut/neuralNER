@@ -117,7 +117,9 @@ class NERModel(object):
         Returns:
             regularized_loss: A 0-d tensor (scalar) output
         """
-        raise NotImplementedError("Each Model must re-implement this method.")
+        reg_loss = beta * sum([tf.nn.l2_loss(tf_var) for tf_var in tf.trainable_variables()
+                               if not ("noreg" in tf_var.name or "Bias" in tf_var.name)])
+        return reg_loss + loss
 
     def add_training_op(self, loss):
         """Sets up the training Ops.
@@ -153,8 +155,8 @@ class NERModel(object):
 
         if self.config.regularization is not None:
             self.regularized_loss = self.add_regularization_op(
-                                                self.loss,
-                                                self.config.regularization)
+                self.loss,
+                self.config.regularization)
         else:
             self.regularized_loss = self.loss
         self.train_op = self.add_training_op(self.regularized_loss)

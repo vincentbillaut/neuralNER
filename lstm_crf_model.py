@@ -31,12 +31,12 @@ def compute_transition_matrix(config, examples):
         Transition matrix computed from the training examples.
 
     """
-    transit = np.zeros((config.n_classes+2, config.n_classes+2))
+    transit = np.zeros((config.n_classes + 2, config.n_classes + 2))
     for _, labels in examples:
-        transit[0,labels[0]] += 1
-        for i in range(len(labels)-1):
-            transit[labels[i]+1, labels[i+1]+1] += 1
-        transit[labels[-1],config.n_classes+1] += 1
+        transit[0, labels[0]] += 1
+        for i in range(len(labels) - 1):
+            transit[labels[i] + 1, labels[i + 1] + 1] += 1
+        transit[labels[-1], config.n_classes + 1] += 1
     transit = (transit.T * 1.0 / transit.sum(axis=1)).T
     return transit
 
@@ -98,22 +98,6 @@ class LSTMCRFModel(LSTMModel):
 
         return feed_dict
 
-    def add_embedding(self):
-        """Adds an embedding layer that maps from input tokens (integers) to vectors and then
-        concatenates those vectors.
-
-        Returns:
-            embeddings: tf.Tensor of shape (None, 1*embed_size)
-        """
-
-        init_embed = tf.Variable(initial_value=self.pretrained_embeddings)
-        embeddings0 = tf.nn.embedding_lookup(
-            params=init_embed, ids=self.input_placeholder)
-        embeddings = tf.reshape(
-            tensor=embeddings0, shape=[-1, 1 * self.config.embed_size])
-
-        return embeddings
-
     def add_prediction_op(self):
         """Adds the unrolled LSTM
 
@@ -133,7 +117,9 @@ class LSTMCRFModel(LSTMModel):
 
         pred = tf.stack(preds)
 
-        assert preds.get_shape().as_list() == [None, self.max_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.max_length, self.config.n_classes], preds.get_shape().as_list())
+        assert preds.get_shape().as_list() == [None, self.max_length,
+                                               self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format(
+            [None, self.max_length, self.config.n_classes], preds.get_shape().as_list())
         return pred
 
     def add_loss_op(self, pred):
@@ -159,16 +145,13 @@ class LSTMCRFModel(LSTMModel):
         #   - two dimensional (batch_size, max_length)
         #   - for ex: pred[i,:] = [1,1,16,0,9,16] (elements are in [0, n_classes-1])
 
-
-
-
         cross_entropy = tf.boolean_mask(
-                tf.nn.sparse_softmax_cross_entropy_with_logits(
-                    labels=y,
-                    logits=pred
-                ),
-                self.mask_placeholder
-            )
+            tf.nn.sparse_softmax_cross_entropy_with_logits(
+                labels=y,
+                logits=pred
+            ),
+            self.mask_placeholder
+        )
         loss = tf.reduce_mean(cross_entropy)
 
         return loss

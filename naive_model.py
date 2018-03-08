@@ -88,7 +88,7 @@ class NaiveModel(NERModel):
             embeddings: tf.Tensor of shape (None, 1*embed_size)
         """
 
-        init_embed = tf.Variable(initial_value=self.pretrained_embeddings)
+        init_embed = tf.Variable(initial_value=self.pretrained_embeddings, name="embeddingTable-noreg")
         embeddings0 = tf.nn.embedding_lookup(
             params=init_embed, ids=self.input_placeholder)
         embeddings = tf.reshape(
@@ -113,8 +113,8 @@ class NaiveModel(NERModel):
         W = tf.Variable(init(shape=[self.config.embed_size, self.config.hidden_size]))
         U = tf.Variable(init(shape=[self.config.hidden_size, self.config.n_classes]))
 
-        b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1")
-        b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2")
+        b1 = tf.Variable(tf.zeros((1, self.config.hidden_size)), "b1-noreg")
+        b2 = tf.Variable(tf.zeros((1, self.config.n_classes)), "b2-noreg")
 
         h = tf.nn.relu(tf.matmul(x, W) + b1)
         h_drop = tf.nn.dropout(h, keep_prob=(1 - self.dropout_placeholder))
@@ -122,16 +122,6 @@ class NaiveModel(NERModel):
 
         return pred
 
-    def add_regularization_op(self, loss, beta):
-        """Adds Ops to regularize the loss function to the computational graph.
-
-        Args:
-            loss: Loss tensor (a scalar).
-        Returns:
-            regularized_loss: A 0-d tensor (scalar) output
-        """
-        # TODO: regularizers + regularized_loss
-        return loss
 
     def add_predict_onehot(self):
         return tf.argmax(self.pred, axis=1)
