@@ -31,7 +31,7 @@ class Config(object):
     def __init__(self, args):
         name = type(self).__name__
         self.no_result_storage = args.no_result
-        self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
+        self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}-".format(datetime.now()) + hex(random.getrandbits(16))[2:].zfill(4) + "/"
 
         logger.info("starting job at " + self.output_path)
         if not os.path.exists(self.output_path) and not self.no_result_storage:
@@ -293,7 +293,7 @@ class NERModel(object):
 
             losses = []
             for i, minibatch in enumerate(
-                    minibatches2(train_examples, self.config.batch_size)):
+                    minibatches2(train_examples, self.config.batch_size, shuffle=True)):
                 loss = self.train_on_batch(sess, *minibatch)
                 losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
