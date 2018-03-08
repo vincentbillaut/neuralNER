@@ -1,0 +1,1 @@
+{"model": "lstm", "vectors": "data/en-cw.txt", "hidden_size": 20, "l2": null, "tiny": false, "no_result": false, "n_epochs": 30, "data_train": "data/ner_dataset.csv", "learning_rate": 0.005, "train_fraction": 0.9, "extra_layer": false, "adaptative_lr": false, "batch_size": 128}
