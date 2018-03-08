@@ -78,7 +78,7 @@ if __name__ == '__main__':
     command_parser.add_argument('-l2', type=float, default=None, help="Beta for L2 regularization.")
     command_parser.add_argument('-lr', '--learning_rate', type=float, default=0.0005, help="Learning rate.")
     command_parser.add_argument('-alr', '--adaptative_lr', action='store_true',
-                                help="Use an adaptative learning rate with the ")
+                                help="Use an adaptative learning rate with the AdaGrad method.")
 
     command_parser.add_argument('-dt', '--data_train', type=str, default="data/ner_dataset.csv", help="Training data")
     command_parser.add_argument('-vv', '--vectors', type=str, default="data/en-cw.txt",
