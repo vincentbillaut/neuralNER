@@ -77,6 +77,8 @@ if __name__ == '__main__':
     command_parser.add_argument('-l2', type=float, default=None, help="Beta for L2 regularization.")
 
     command_parser.add_argument('-t', '--tiny', action='store_true', help="Whether to run on reduced dataset.")
+    command_parser.add_argument('-no_result', action='store_true', help="Activate in order NOT to store the run's result files.")
+
     command_parser.add_argument('-e', '--extra_layer', action='store_true',
                                 help="Whether to add an extra layer on top (for LSTM and BiLSTM).")
 

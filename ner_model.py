@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import random
 from datetime import datetime
 
 import tensorflow as tf
@@ -29,16 +30,18 @@ class Config(object):
 
     def __init__(self, args):
         name = type(self).__name__
+        self.no_result_storage = args.no_result
         self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}/".format(datetime.now())
 
         logger.info("starting job at " + self.output_path)
-        if not os.path.exists(self.output_path):
+        if not os.path.exists(self.output_path) and not self.no_result_storage:
             os.makedirs(self.output_path)
 
-        with open(os.path.join(self.output_path, "params.json"), "w") as f:
-            dico = vars(args)
-            del dico['func']
-            json.dump(dico, f)
+        if not self.no_result_storage:
+            with open(os.path.join(self.output_path, "params.json"), "w") as f:
+                dico = vars(args)
+                del dico['func']
+                json.dump(dico, f)
         self.model_output = self.output_path + "model.weights"
         self.eval_output = self.output_path + "results.txt"
         self.log_output = self.output_path + "log"
@@ -289,17 +292,45 @@ class NERModel(object):
                 losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
 
-            with open(self.config.output_path + "losses.los", "a") as f:
-                for item in losses:
-                    f.write("%s\n" % item)
+            random_train_examples_id = random.sample(range(len(train_examples)), k=len(dev_examples))
+            _, train_entity_scores = self.evaluate(sess,
+                                                   [train_examples[ind] for ind in random_train_examples_id],
+                                                   [train_examples_raw[ind] for ind in random_train_examples_id])
+            p, r, f1 = train_entity_scores
+            if not self.config.no_result_storage:
+                with open(self.config.output_path + "train_losses.los", "a") as f:
+                    for item in losses:
+                        f.write("%s\n" % item)
+                with open(self.config.output_path + "train_f1.los", "a") as f:
+                    f.write("%s\n" % f1)
+                with open(self.config.output_path + "train_precision.los", "a") as f:
+                    f.write("%s\n" % p)
+                with open(self.config.output_path + "train_recall.los", "a") as f:
+                    f.write("%s\n" % r)
 
             logger.info("Evaluating on development data")
-            token_cm, entity_scores = self.evaluate(sess, dev_examples, dev_examples_raw)
+            for dev_minibatch in minibatches2(dev_examples, len(dev_examples)):
+                dev_loss = self.test_on_batch(sess, *dev_minibatch)[0]
+                break
+            token_cm, dev_entity_scores = self.evaluate(sess,
+                                                        dev_examples,
+                                                        dev_examples_raw)
             logger.debug("Token-level confusion matrix:\n" + token_cm.as_table())
             logger.debug("Token-level scores:\n" + token_cm.summary())
-            logger.info("Entity level P/R/F1: %.2f/%.2f/%.2f", *entity_scores)
+            logger.info("Entity level P/R/F1: %.2f/%.2f/%.2f", *dev_entity_scores)
+            logger.info("Dev set loss: %.4f", dev_loss)
+            p, r, f1 = dev_entity_scores
+            if not self.config.no_result_storage:
+                with open(self.config.output_path + "dev_losses.los", "a") as f:
+                    f.write("%s\n" % dev_loss)
+                with open(self.config.output_path + "dev_f1.los", "a") as f:
+                    f.write("%s\n" % f1)
+                with open(self.config.output_path + "dev_precision.los", "a") as f:
+                    f.write("%s\n" % p)
+                with open(self.config.output_path + "dev_recall.los", "a") as f:
+                    f.write("%s\n" % r)
 
-            score = entity_scores[-1]
+            score = dev_entity_scores[-1]
 
             if score > best_score:
                 best_score = score
