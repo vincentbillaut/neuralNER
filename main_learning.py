@@ -68,24 +68,27 @@ if __name__ == '__main__':
     command_parser = subparsers.add_parser('train', help='')
     command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf", "bilstm"], default="naive",
                                 help="Type of model to use.")
-    command_parser.add_argument('-vv', '--vectors', type=str, default="data/en-cw.txt",
-                                help="Path to word vectors file.")
-    command_parser.add_argument('-b', '--batch_size', type=int, default=128, help="Size of batches.")
+
     command_parser.add_argument('-s', '--hidden_size', type=int, default=20, help="Size of hidden layers.")
-    command_parser.add_argument('-n', '--n_epochs', type=int, default=10, help="Number of epochs.")
-
-    command_parser.add_argument('-l2', type=float, default=None, help="Beta for L2 regularization.")
-
-    command_parser.add_argument('-t', '--tiny', action='store_true', help="Whether to run on reduced dataset.")
-    command_parser.add_argument('-no_result', action='store_true', help="Activate in order NOT to store the run's result files.")
-
     command_parser.add_argument('-e', '--extra_layer', action='store_true',
                                 help="Whether to add an extra layer on top (for LSTM and BiLSTM).")
 
+    command_parser.add_argument('-b', '--batch_size', type=int, default=128, help="Size of batches.")
+    command_parser.add_argument('-n', '--n_epochs', type=int, default=10, help="Number of epochs.")
+    command_parser.add_argument('-l2', type=float, default=None, help="Beta for L2 regularization.")
+    command_parser.add_argument('-lr', '--learning_rate', type=float, default=0.0005, help="Learning rate.")
+    command_parser.add_argument('-alr', '--adaptative_lr', action='store_true',
+                                help="Use an adaptative learning rate with the ")
+
+    command_parser.add_argument('-dt', '--data_train', type=str, default="data/ner_dataset.csv", help="Training data")
+    command_parser.add_argument('-vv', '--vectors', type=str, default="data/en-cw.txt",
+                                help="Path to word vectors file.")
     command_parser.add_argument('-tf', '--train_fraction', type=float, default=.9,
                                 help="The fraction of the dataset to use for training.")
-    command_parser.add_argument('-lr', '--learning_rate', type=float, default=0.0005, help="Learning rate.")
-    command_parser.add_argument('-dt', '--data_train', type=str, default="data/ner_dataset.csv", help="Training data")
+
+    command_parser.add_argument('-t', '--tiny', action='store_true', help="Whether to run on reduced dataset.")
+    command_parser.add_argument('-no_result', action='store_true',
+                                help="Activate in order NOT to store the run's result files.")
 
     command_parser.set_defaults(func=main)
 

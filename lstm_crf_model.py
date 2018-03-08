@@ -156,24 +156,6 @@ class LSTMCRFModel(LSTMModel):
 
         return loss
 
-    def add_training_op(self, loss):
-        """Sets up the training Ops.
-
-        Creates an optimizer and applies the gradients to all trainable variables.
-        The Op returned by this function is what must be passed to the
-        `sess.run()` call to cause the model to train.
-
-        Args:
-            loss: Loss tensor, from cross_entropy_loss.
-        Returns:
-            train_op: The Op for training.
-        """
-
-        opt = tf.train.AdamOptimizer(learning_rate=self.config.lr)
-        train_op = opt.minimize(loss)
-
-        return train_op
-
     def fit(self, sess, saver, train_examples_raw, dev_examples_raw):
         self.transition_matrix = tf.constant(compute_transition_matrix(self.config, train_examples_raw))
         return super().fit(sess, saver, train_examples_raw, dev_examples_raw)

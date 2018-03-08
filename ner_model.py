@@ -52,6 +52,7 @@ class Config(object):
         self.batch_size = args.batch_size
         self.hidden_size = args.hidden_size
         self.regularization = args.l2
+        self.adaptative_lr = args.adaptative_lr
 
 
 class NERModel(object):
@@ -140,8 +141,13 @@ class NERModel(object):
         Returns:
             train_op: The Op for training.
         """
+        if self.config.adaptative_lr:
+            opt = tf.train.AdagradOptimizer(learning_rate=self.config.lr)
+        else:
+            opt = tf.train.AdamOptimizer(learning_rate=self.config.lr)
 
-        raise NotImplementedError("Each Model must re-implement this method.")
+        train_op = opt.minimize(loss)
+        return train_op
 
     def add_predict_onehot(self):
         return tf.argmax(self.pred, axis=2)
