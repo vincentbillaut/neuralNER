@@ -23,7 +23,9 @@ class LSTMConfig(Config):
 
     def __init__(self, args):
         super().__init__(args)
-        self.extra_layer = args.extra_layer
+        self.extra_layer = args.extra_layer or args.ee
+        self.second_extra_layer = args.ee
+        self.other_layer_size = args.other_layer_size
         if (not self.extra_layer) and (self.hidden_size != 17):
             logger.info("Without extra layer (no -e), hidden_size forced to 17.")
             self.hidden_size = 17
@@ -168,8 +170,12 @@ class LSTMModel(NERModel):
 
         if self.config.extra_layer:
             inline_outputs = tf.reshape(outputs, shape=(-1, self.config.hidden_size))
-            inline_preds = self.add_extra_layer(inline_outputs, self.config.hidden_size, '0')
-            
+            if self.config.second_extra_layer:
+                inline_hidden = self.add_extra_layer(inline_outputs, self.config.hidden_size, '1', self.config.other_layer_size)
+                inline_preds = self.add_extra_layer(inline_hidden, self.config.other_layer_size, '2', activation=tf.nn.relu)  # default output size is n_classes
+            else:
+                inline_preds = self.add_extra_layer(inline_outputs, self.config.hidden_size, '0')
+
             preds = tf.reshape(inline_preds,
                                shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
         else:

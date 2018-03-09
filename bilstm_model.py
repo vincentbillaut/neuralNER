@@ -17,10 +17,7 @@ class BiLSTMConfig(LSTMConfig):
     get the hyperparameter settings.
     """
     # n_features = 36
-
-    def __init__(self, args):
-        super().__init__(args)
-        self.other_layer_size = self.hidden_size
+    pass
 
 
 class BiLSTMModel(LSTMModel):
@@ -65,7 +62,7 @@ class BiLSTMModel(LSTMModel):
             inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
             inline_preds = self.add_extra_layer(inline_outputs, 2*self.config.hidden_size, "0")
         else:
-            inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))\
+            inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
             inline_hidden = self.add_extra_layer(inline_outputs, 2 * self.config.hidden_size, "1", self.config.other_layer_size)
             inline_preds = self.add_extra_layer(inline_hidden, self.config.other_layer_size, "2")  # default : out = self.config.n_classes
 

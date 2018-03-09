@@ -69,9 +69,12 @@ if __name__ == '__main__':
     command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf", "bilstm"], default="naive",
                                 help="Type of model to use.")
 
-    command_parser.add_argument('-s', '--hidden_size', type=int, default=20, help="Size of hidden layers.")
+    command_parser.add_argument('-s1', '--hidden_size', type=int, default=20, help="Size of hidden layers.")
+    command_parser.add_argument('-s2', '--other_layer_size', type=int, default=20, help="Size of extra hidden layer.")
     command_parser.add_argument('-e', '--extra_layer', action='store_true',
-                                help="Whether to add an extra layer on top (for LSTM and BiLSTM).")
+                                help="Whether to add an extra layer on top (for LSTM) or a second one (for BiLSTM).")
+    command_parser.add_argument('-ee', action='store_true',
+                                help="Whether to add a second extra layer on top (for LSTM). Will trigger --extra_layer, no need to cumulate.")
 
     command_parser.add_argument('-b', '--batch_size', type=int, default=128, help="Size of batches.")
     command_parser.add_argument('-n', '--n_epochs', type=int, default=10, help="Number of epochs.")
