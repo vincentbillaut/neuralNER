@@ -49,9 +49,7 @@ class LSTMCRFConfig(LSTMConfig):
     instantiation. They can then call self.config.<hyperparameter_name> to
     get the hyperparameter settings.
     """
-    # n_features = 36
-    n_classes = 17
-    embed_size = 50
+    pass
 
 
 class LSTMCRFModel(LSTMModel):
@@ -61,66 +59,7 @@ class LSTMCRFModel(LSTMModel):
     """
 
     def __init__(self):
-        raise NotImplementedError("Model to be completed before use.")
-
-    def add_placeholders(self):
-        """Generates placeholder variables to represent the input tensors
-
-        input_placeholder: Input placeholder tensor of  shape (None, 1), type tf.int32
-            containing index of our word in the embedding
-        labels_placeholder: Labels placeholder tensor of shape (None, n_classes), type tf.float32
-        dropout_placeholder: Dropout rate placeholder, scalar, type float32
-        mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
-        """
-        self.input_placeholder = tf.placeholder(tf.int32, (None, 1))
-        self.labels_placeholder = tf.placeholder(
-            tf.float32, (None, self.config.n_classes))
-        self.mask_placeholder = tf.placeholder(tf.bool, [None, self.max_length])
-
-    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
-        """Creates the feed_dict for the dependency parser.
-
-        Args:
-            inputs_batch: A batch of input data.
-            mask_batch:   A batch of mask data.
-            labels_batch: A batch of label data.
-            dropout: Dropout rate.
-        Returns:
-            feed_dict: The feed dictionary mapping from placeholders to values.
-        """
-
-        feed_dict = {
-            self.input_placeholder: inputs,
-            self.mask_placeholder: mask_batch
-        }
-        if labels_batch is not None:
-            feed_dict[self.labels_placeholder] = labels_batch
-
-        return feed_dict
-
-    def add_prediction_op(self):
-        """Adds the unrolled LSTM
-
-        Returns:
-            pred:   tf.Tensor of shape (batch_size, max_length, n_classes)
-        """
-
-        x = self.add_embedding()
-        cell = tf.rnn.LSTMCell()
-        preds = []
-
-        hidden_state = tf.constant(tf.zeros(self.config.hidden_size))
-
-        for t in range(self.config.max_length):
-            output, hidden_state = cell(self.input_placeholder, hidden_state)
-            preds.append(output)
-
-        pred = tf.stack(preds)
-
-        assert preds.get_shape().as_list() == [None, self.max_length,
-                                               self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format(
-            [None, self.max_length, self.config.n_classes], preds.get_shape().as_list())
-        return pred
+        raise NotImplementedError("Model to be finished before use.")
 
     def add_loss_op(self, pred):
         """Adds Ops for the loss function to the computational graph.
