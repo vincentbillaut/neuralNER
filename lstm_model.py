@@ -167,15 +167,9 @@ class LSTMModel(NERModel):
                                            dtype=tf.float32)
 
         if self.config.extra_layer:
-            U = tf.get_variable("U",
-                                shape=(self.config.hidden_size, self.config.n_classes),
-                                initializer=initializer)
-            b2 = tf.get_variable("b2-noreg",
-                                 shape=self.config.n_classes,
-                                 initializer=tf.constant_initializer())
-
             inline_outputs = tf.reshape(outputs, shape=(-1, self.config.hidden_size))
-            inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
+            inline_preds = self.add_extra_layer(inline_outputs, self.config.hidden_size, '0')
+            
             preds = tf.reshape(inline_preds,
                                shape=(tf.shape(outputs)[0], self.config.max_length, self.config.n_classes))
         else:
@@ -188,6 +182,17 @@ class LSTMModel(NERModel):
 
     def add_predict_onehot(self):
         return tf.argmax(self.pred, axis=2)
+
+
+    def add_extra_layer(self, input_tensor, input_size, postfix, output_size = None, activation = tf.nn.sigmoid, initializer=tf.contrib.layers.xavier_initializer()):
+        output_s = output_size or self.config.n_classes
+        U = tf.get_variable("U" + postfix,
+                            shape=(input_size, output_s),
+                            initializer=initializer)
+        b = tf.get_variable("b" + postfix + "-noreg",
+                             shape=output_s,
+                             initializer=tf.constant_initializer())
+        return activation(tf.matmul(input_tensor, U) + b)
 
     def add_loss_op(self, pred):
         """Adds Ops for the loss function to the computational graph.

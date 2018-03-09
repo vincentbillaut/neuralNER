@@ -17,7 +17,10 @@ class BiLSTMConfig(LSTMConfig):
     get the hyperparameter settings.
     """
     # n_features = 36
-    pass
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.other_layer_size = self.hidden_size
 
 
 class BiLSTMModel(LSTMModel):
@@ -58,20 +61,13 @@ class BiLSTMModel(LSTMModel):
         concat_output = tf.concat(outputs, 2)
         concat_state = tf.concat(output_states, 2)
 
-        #TODO maybe make the optional extra layer a *second* layer?
-        # to go from concatenated outputs to prediction, there needs to be
-        # an extra layer so the option as in LSTM doesn't make sense anymore
-        # if True or self.config.extra_layer:
-
-        U = tf.get_variable("U",
-                            shape=(2 * self.config.hidden_size, self.config.n_classes),
-                            initializer=initializer)
-        b2 = tf.get_variable("b2-noreg",
-                             shape=self.config.n_classes,
-                             initializer=tf.constant_initializer())
-
-        inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
-        inline_preds = tf.nn.sigmoid(tf.matmul(inline_outputs, U) + b2)
+        if not self.config.extra_layer:
+            inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
+            inline_preds = self.add_extra_layer(inline_outputs, 2*self.config.hidden_size, "0")
+        else:
+            inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))\
+            inline_hidden = self.add_extra_layer(inline_outputs, 2 * self.config.hidden_size, "1", self.config.other_layer_size)
+            inline_preds = self.add_extra_layer(inline_hidden, self.config.other_layer_size, "2")  # default : out = self.config.n_classes
 
         preds = tf.reshape(inline_preds, shape=(tf.shape(concat_output)[0], self.config.max_length, self.config.n_classes))
 
