@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 from ner_model import NERModel
-from lstm_model import LSTMModel, LSTMConfig
+from bilstm_model import BiLSTMModel, BiLSTMConfig
 from utils.minibatches import minibatches
 
 
@@ -41,7 +41,7 @@ def compute_transition_matrix(config, examples):
     return transit
 
 
-class LSTMCRFConfig(LSTMConfig):
+class BiLSTMCRFConfig(BiLSTMConfig):
     """Holds model hyperparams and data information.
 
     The config class is used to store various hyperparameters and dataset
@@ -52,7 +52,7 @@ class LSTMCRFConfig(LSTMConfig):
     pass
 
 
-class LSTMCRFModel(LSTMModel):
+class BiLSTMCRFModel(BiLSTMModel):
     """
     Implements a feedforward neural network with an embedding layer and single hidden layer.
     This network will predict whether an input word is a Named Entity

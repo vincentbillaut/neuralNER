@@ -5,7 +5,7 @@ import time
 
 import tensorflow as tf
 
-from lstm_crf_model import LSTMCRFConfig, LSTMCRFModel
+from bilstm_crf_model import BiLSTMCRFConfig, BiLSTMCRFModel
 from lstm_model import LSTMConfig, LSTMModel
 from naive_model import NaiveConfig, NaiveModel
 from bilstm_model import BiLSTMConfig, BiLSTMModel
