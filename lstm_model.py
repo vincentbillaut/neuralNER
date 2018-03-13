@@ -191,6 +191,34 @@ class LSTMModel(NERModel):
 
 
     def add_extra_layer(self, input_tensor, input_size, postfix, output_size = None, activation = tf.nn.sigmoid, initializer=tf.contrib.layers.xavier_initializer()):
+        """Creates variable and processes the input to produce the output of
+        an additional hidden layer.
+
+        output = act(x * U + b)
+
+        Parameters
+        ----------
+        input_tensor : tf.Tensor
+            Input tensor for the additional layer, of shape [None, input_size].
+        input_size : int
+            Dimension of the input.
+        postfix : str
+            Postfix to give to the variable names (useful if creating several
+            additional layers, to be sure the parameter variables are distinct).
+        output_size : int
+            Desired size of input. Defaults to self.config.n_classes, to fit the
+            prediction task at hand.
+        activation : tf.nn.[function]
+            Activation function, usually tf.nn.sigmoid, tf.nn.tanh or tf.nn.relu.
+        initializer : tf.initializer?
+            Initializer for weight variables.
+
+        Returns
+        -------
+        tf.Tensor
+            Output of the added hidden layer.
+
+        """
         output_s = output_size or self.config.n_classes
         U = tf.get_variable("U" + postfix,
                             shape=(input_size, output_s),
