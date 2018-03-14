@@ -31,7 +31,8 @@ class Config(object):
     def __init__(self, args):
         name = type(self).__name__
         self.no_result_storage = args.no_result
-        self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}-".format(datetime.now()) + hex(random.getrandbits(16))[2:].zfill(4) + "/"
+        self.output_path = "results/" + name + "/{:%Y%m%d_%H%M%S}-".format(datetime.now()) + hex(
+            random.getrandbits(16))[2:].zfill(4) + "/"
 
         logger.info("starting job at " + self.output_path)
         if not os.path.exists(self.output_path) and not self.no_result_storage:
@@ -72,9 +73,9 @@ class NERModel(object):
         See for more information:
         https://www.tensorflow.org/versions/r0.7/api_docs/python/io_ops.html#placeholders
         """
-        raise NotImplementedError("Each Model must re-implement this method.")
+        self.learning_rate_decay_placeholder = tf.placeholder(tf.float32)
 
-    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
+    def create_feed_dict(self, inputs=None, mask_batch=None, labels_batch=None, dropout=0., learning_rate_decay=0.):
         """Creates the feed_dict for one step of training.
 
         A feed_dict takes the form of:
@@ -93,7 +94,8 @@ class NERModel(object):
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
-        raise NotImplementedError("Each Model must re-implement this method.")
+        feed_dict = {self.learning_rate_decay_placeholder: learning_rate_decay}
+        return feed_dict
 
     def add_prediction_op(self):
         """Implements the core of the model that transforms a batch of input data into predictions.
@@ -142,9 +144,9 @@ class NERModel(object):
             train_op: The Op for training.
         """
         if self.config.adaptative_lr:
-            opt = tf.train.AdagradOptimizer(learning_rate=self.config.lr)
+            opt = tf.train.AdagradOptimizer(learning_rate=self.config.lr * self.learning_rate_decay_placeholder)
         else:
-            opt = tf.train.AdamOptimizer(learning_rate=self.config.lr)
+            opt = tf.train.AdamOptimizer(learning_rate=self.config.lr * self.learning_rate_decay_placeholder)
 
         train_op = opt.minimize(loss)
         return train_op
@@ -181,15 +183,16 @@ class NERModel(object):
         examples_with_mask = [(ex[0], ex[1], mask) for ex, mask in zip(examples, iter(lambda: True, False))]
         return examples_with_mask
 
-    def train_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
-        feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
+    def train_on_batch(self, sess, inputs_batch, labels_batch, mask_batch, learning_rate_decay):
+        feed = self.create_feed_dict(inputs_batch,
                                      labels_batch=labels_batch,
-                                     mask_batch=mask_batch)
+                                     mask_batch=mask_batch,
+                                     learning_rate_decay=learning_rate_decay)
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
         return loss
 
     def test_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
-        feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
+        feed = self.create_feed_dict(inputs_batch,
                                      labels_batch=labels_batch,
                                      mask_batch=mask_batch)
         loss = sess.run([self.loss], feed_dict=feed)
@@ -279,7 +282,12 @@ class NERModel(object):
         train_examples = self.preprocess_sequence_data(train_examples_raw)
         dev_examples = self.preprocess_sequence_data(dev_examples_raw)
 
+        learning_rate_decay = 1.
         for epoch in range(self.config.n_epochs):
+            if epoch > self.config.n_epochs / 2:
+                learning_rate_decay = 1. / 3.
+            if epoch > self.config.n_epochs * 3 / 4:
+                learning_rate_decay = 1. / 9.
             logger.info("Epoch %d out of %d", epoch + 1, self.config.n_epochs)
 
             prog = Progbar(target=1 + int(len(train_examples) / self.config.batch_size))
@@ -287,7 +295,7 @@ class NERModel(object):
             losses = []
             for i, minibatch in enumerate(
                     minibatches2(train_examples, self.config.batch_size, shuffle=True)):
-                loss = self.train_on_batch(sess, *minibatch)
+                loss = self.train_on_batch(sess, *minibatch, learning_rate_decay)
                 losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
 

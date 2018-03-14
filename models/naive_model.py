@@ -58,7 +58,7 @@ class NaiveModel(NERModel):
         self.mask_placeholder = tf.placeholder(tf.bool, None)
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
-    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0):
+    def create_feed_dict(self, inputs=None, mask_batch=None, labels_batch=None, dropout=0., learning_rate_decay=1.):
         """Creates the feed_dict for the dependency parser.
 
         Args:
@@ -69,7 +69,7 @@ class NaiveModel(NERModel):
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
-        feed_dict = {}
+        feed_dict = super().create_feed_dict(learning_rate_decay=learning_rate_decay)
         for feed, placeholder in zip([inputs, labels_batch, mask_batch, dropout],
                                      [self.input_placeholder,
                                       self.labels_placeholder,

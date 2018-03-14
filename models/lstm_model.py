@@ -105,13 +105,14 @@ class LSTMModel(NERModel):
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
         mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
         """
+        super().add_placeholders()
         self.input_placeholder = tf.placeholder(tf.int32,
                                                 (None, self.config.max_length, 2 * self.config.n_features + 1))
         self.labels_placeholder = tf.placeholder(tf.int32, (None, self.config.max_length))
         self.mask_placeholder = tf.placeholder(tf.bool, [None, self.config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
-    def create_feed_dict(self, inputs, mask_batch, labels_batch=None, dropout=0.):
+    def create_feed_dict(self, inputs=None, mask_batch=None, labels_batch=None, dropout=0., learning_rate_decay=1.):
         """Creates the feed_dict for the dependency parser.
 
         Args:
@@ -122,7 +123,7 @@ class LSTMModel(NERModel):
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
-        feed_dict = {}
+        feed_dict = super().create_feed_dict(learning_rate_decay = learning_rate_decay)
         for feed, placeholder in zip([inputs, labels_batch, mask_batch, dropout],
                                      [self.input_placeholder,
                                       self.labels_placeholder,
