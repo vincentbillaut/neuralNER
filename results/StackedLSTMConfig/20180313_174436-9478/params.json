@@ -1,0 +1,17 @@
+{
+ "no_result": false,
+ "ee": false,
+ "train_fraction": 0.9,
+ "batch_size": 128,
+ "learning_rate": 0.005,
+ "hidden_size": 50,
+ "tiny": false,
+ "n_epochs": 30,
+ "model": "stacked_lstm",
+ "vectors": "data/en-cw.txt",
+ "other_layer_size": 20,
+ "extra_layer": false,
+ "adaptative_lr": false,
+ "data_train": "data/ner_dataset.csv",
+ "l2": null
+}
