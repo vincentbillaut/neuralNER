@@ -62,10 +62,11 @@ class NaiveModel(NERModel):
         """Creates the feed_dict for the dependency parser.
 
         Args:
-            inputs_batch: A batch of input data.
+            inputs: A batch of input data.
             mask_batch:   A batch of mask data.
             labels_batch: A batch of label data.
             dropout: Dropout rate.
+            learning_rate_decay: Decay of the learning rate.
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
