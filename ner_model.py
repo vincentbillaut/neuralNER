@@ -41,7 +41,7 @@ class Config(object):
             with open(os.path.join(self.output_path, "params.json"), "w") as f:
                 dico = vars(args)
                 del dico['func']
-                json.dump(dico, f)
+                json.dump(dico, f, indent=True)
         self.model_output = self.output_path + "model.weights"
         self.eval_output = self.output_path + "results.txt"
         self.log_output = self.output_path + "log"
