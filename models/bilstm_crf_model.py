@@ -1,11 +1,7 @@
-import os
-import time
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
-from ner_model import NERModel
-from bilstm_model import BiLSTMModel, BiLSTMConfig
-from utils.minibatches import minibatches
+from models.bilstm_model import BiLSTMModel, BiLSTMConfig
 
 
 def compute_transition_matrix(config, examples):

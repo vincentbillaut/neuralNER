@@ -1,11 +1,6 @@
-import os
-import time
 import tensorflow as tf
-import numpy as np
 
-from ner_model import NERModel
-from lstm_model import LSTMModel, LSTMConfig
-from utils.minibatches import minibatches
+from models.lstm_model import LSTMModel, LSTMConfig
 
 
 class BiLSTMConfig(LSTMConfig):

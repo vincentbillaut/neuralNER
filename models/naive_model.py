@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from ner_model import NERModel, Config
+from models.ner_model import NERModel, Config
 
 
 class NaiveConfig(Config):
