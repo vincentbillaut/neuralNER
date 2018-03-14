@@ -1,11 +1,6 @@
-import os
-import time
 import tensorflow as tf
-import numpy as np
 
-from ner_model import NERModel
-from lstm_model import LSTMModel, LSTMConfig
-from utils.minibatches import minibatches
+from models.lstm_model import LSTMModel, LSTMConfig
 
 
 class BiLSTMConfig(LSTMConfig):
@@ -40,33 +35,40 @@ class BiLSTMModel(LSTMModel):
         fwcell = tf.nn.rnn_cell.LSTMCell(num_units=self.config.hidden_size, initializer=initializer)
         bwcell = tf.nn.rnn_cell.LSTMCell(num_units=self.config.hidden_size, initializer=initializer)
 
-        fwcell_with_dropout = tf.nn.rnn_cell.DropoutWrapper(fwcell, input_keep_prob=1., output_keep_prob=1. - dropout_rate)
-        bwcell_with_dropout = tf.nn.rnn_cell.DropoutWrapper(bwcell, input_keep_prob=1., output_keep_prob=1. - dropout_rate)
+        fwcell_with_dropout = tf.nn.rnn_cell.DropoutWrapper(fwcell, input_keep_prob=1.,
+                                                            output_keep_prob=1. - dropout_rate)
+        bwcell_with_dropout = tf.nn.rnn_cell.DropoutWrapper(bwcell, input_keep_prob=1.,
+                                                            output_keep_prob=1. - dropout_rate)
 
         fwinitial_state = fwcell_with_dropout.zero_state(tf.shape(x)[0], dtype=tf.float32)
         bwinitial_state = bwcell_with_dropout.zero_state(tf.shape(x)[0], dtype=tf.float32)
 
         outputs, output_states = tf.nn.bidirectional_dynamic_rnn(
-                                        fwcell_with_dropout,
-                                        bwcell_with_dropout,
-                                        x,
-                                        initial_state_fw=fwinitial_state,
-                                        initial_state_bw=bwinitial_state,
-                                        time_major=False
-                                        )
+            fwcell_with_dropout,
+            bwcell_with_dropout,
+            x,
+            initial_state_fw=fwinitial_state,
+            initial_state_bw=bwinitial_state,
+            time_major=False
+        )
 
         concat_output = tf.concat(outputs, 2)
-        concat_state = tf.concat(output_states, 2)
+        # concat_state = tf.concat(output_states, 2)
 
         if not self.config.extra_layer:
             inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
-            inline_preds = self.add_extra_layer(inline_outputs, 2*self.config.hidden_size, "0")
+            inline_preds = self.add_extra_layer(inline_outputs, input_size=2 * self.config.hidden_size, postfix="0")
         else:
             inline_outputs = tf.reshape(concat_output, shape=(-1, 2 * self.config.hidden_size))
-            inline_hidden = self.add_extra_layer(inline_outputs, 2 * self.config.hidden_size, "1", self.config.other_layer_size)
-            inline_preds = self.add_extra_layer(inline_hidden, self.config.other_layer_size, "2")  # default : out = self.config.n_classes
+            inline_hidden = self.add_extra_layer(inline_outputs, input_size=2 * self.config.hidden_size, postfix="1",
+                                                 output_size=self.config.other_layer_size)
+            inline_preds = self.add_extra_layer(inline_hidden, input_size=self.config.other_layer_size,
+                                                postfix="2")  # default : out = self.config.n_classes
 
-        preds = tf.reshape(inline_preds, shape=(tf.shape(concat_output)[0], self.config.max_length, self.config.n_classes))
+        preds = tf.reshape(inline_preds,
+                           shape=(tf.shape(concat_output)[0], self.config.max_length, self.config.n_classes))
 
-        assert preds.get_shape().as_list() == [None, self.config.max_length, self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format([None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
+        assert preds.get_shape().as_list() == [None, self.config.max_length,
+                                               self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format(
+            [None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
         return preds
