@@ -318,6 +318,7 @@ class NERModel(object):
             logger.debug("Token-level scores:\n" + token_cm.summary())
             logger.info("Entity level P/R/F1: %.2f/%.2f/%.2f", *dev_entity_scores)
             logger.info("Dev set loss: %.4f", dev_loss)
+            logger.info("For job at " + self.config.output_path)
             p, r, f1 = dev_entity_scores
             if not self.config.no_result_storage:
                 with open(self.config.output_path + "dev_losses.los", "a") as f:

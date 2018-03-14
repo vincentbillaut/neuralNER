@@ -22,8 +22,7 @@ class StackedLSTMConfig(LSTMConfig):
 
     def __init__(self, args):
         super().__init__(args)
-        self.extra_layer = args.extra_layer or args.ee
-        self.second_extra_layer = args.ee
+        self.extra_layer = args.extra_layer
         self.other_layer_size = args.other_layer_size
         if (not self.extra_layer) and (self.other_layer_size != 17):
             logger.info("Without extra layer (no -e), other_layer_size forced to 17.")
@@ -74,42 +73,3 @@ class StackedLSTMModel(LSTMModel):
                                                self.config.n_classes], "predictions are not of the right shape. Expected {}, got {}".format(
             [None, self.config.max_length, self.config.n_classes], preds.get_shape().as_list())
         return preds
-
-    def add_extra_layer(self, input_tensor, input_size, postfix, output_size=None, activation=tf.nn.sigmoid,
-                        initializer=tf.contrib.layers.xavier_initializer()):
-        """Creates variable and processes the input to produce the output of
-        an additional hidden layer.
-
-        output = act(x * U + b)
-
-        Parameters
-        ----------
-        input_tensor : tf.Tensor
-            Input tensor for the additional layer, of shape [None, input_size].
-        input_size : int
-            Dimension of the input.
-        postfix : str
-            Postfix to give to the variable names (useful if creating several
-            additional layers, to be sure the parameter variables are distinct).
-        output_size : int
-            Desired size of input. Defaults to self.config.n_classes, to fit the
-            prediction task at hand.
-        activation : tf.nn.[function]
-            Activation function, usually tf.nn.sigmoid, tf.nn.tanh or tf.nn.relu.
-        initializer : tf.initializer?
-            Initializer for weight variables.
-
-        Returns
-        -------
-        tf.Tensor
-            Output of the added hidden layer.
-
-        """
-        output_s = output_size or self.config.n_classes
-        U = tf.get_variable("U" + postfix,
-                            shape=(input_size, output_s),
-                            initializer=initializer)
-        b = tf.get_variable("b" + postfix + "-noreg",
-                            shape=output_s,
-                            initializer=tf.constant_initializer())
-        return activation(tf.matmul(input_tensor, U) + b)
