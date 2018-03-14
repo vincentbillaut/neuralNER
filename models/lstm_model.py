@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import logging
 
-from ner_model import NERModel, Config
+from models.ner_model import NERModel, Config
 from utils.parser_utils import window_iterator
 
 logger = logging.getLogger("NERproject")
