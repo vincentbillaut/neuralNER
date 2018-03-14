@@ -5,10 +5,10 @@ import time
 
 import tensorflow as tf
 
-from bilstm_crf_model import BiLSTMCRFConfig, BiLSTMCRFModel
-from lstm_model import LSTMConfig, LSTMModel
-from naive_model import NaiveConfig, NaiveModel
-from bilstm_model import BiLSTMConfig, BiLSTMModel
+from models.lstm_model import LSTMConfig, LSTMModel
+from models.naive_model import NaiveConfig, NaiveModel
+from models.bilstm_model import BiLSTMConfig, BiLSTMModel
+from models.stacked_lstm_model import StackedLSTMConfig, StackedLSTMModel
 from utils.Embedder import Embedder
 
 
@@ -46,6 +46,9 @@ def main(args):
         elif args.model == "bilstm":
             config = BiLSTMConfig(args)
             model = BiLSTMModel(config, embeddings, embedder)
+        elif args.model == "stacked_lstm":
+            config = StackedLSTMConfig(args)
+            model = StackedLSTMModel(config, embeddings, embedder)
 
         init_op = tf.global_variables_initializer()
         saver = tf.train.Saver()
@@ -66,7 +69,7 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers()
 
     command_parser = subparsers.add_parser('train', help='')
-    command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf", "bilstm"], default="naive",
+    command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf", "bilstm", "stacked_lstm"], default="naive",
                                 help="Type of model to use.")
 
     command_parser.add_argument('-s1', '--hidden_size', type=int, default=20, help="Size of hidden layers.")
