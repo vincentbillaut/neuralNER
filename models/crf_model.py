@@ -25,7 +25,6 @@ class CRFModel(object):
     def __init__(self, model, CRF, args):
         self.model = model
         self.CRF = CRF
-        self.alphaCRF = 1. / 1000.
         self.alphasCRF = np.logspace(-3, 3, 20)
         self.alphasOutputPaths = {alpha: self.model.config.output_path + "alpha_" + str(alpha_i) + "/" for
                                   alpha_i, alpha in enumerate(self.alphasCRF)}
@@ -56,7 +55,7 @@ class CRFModel(object):
                     for t, pred_proba in enumerate(sentence_preds_proba[1:, :]):
                         previous_predicted_label = sentence_preds_[t - 1]
                         crf_probas = self.CRF.predict_proba_index(previous_predicted_label)
-                        combined_probas = self.alphaCRF * crf_probas + pred_proba
+                        combined_probas = alpha * crf_probas + pred_proba
                         sentence_preds_.append(np.argmax(combined_probas))
                     preds_[alpha].append(sentence_preds_)
             for alpha in self.alphasCRF:
