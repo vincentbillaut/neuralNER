@@ -220,7 +220,7 @@ class NERModel(object):
         predictions = sess.run(self.pred_onehot, feed_dict=feed)
         return predictions
 
-    def predict_proba_on_batch(self, sess, inputs_batch, mask_batch):
+    def predict_proba_on_batch(self, sess, input_batch, mask_batch):
         """Make predictions for the provided batch of data
 
         Args:
@@ -229,7 +229,7 @@ class NERModel(object):
         Returns:
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
-        feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
+        feed = self.create_feed_dict(input_batch,  # .reshape(-1, 1),
                                      dropout=self.config.dropout_rate,
                                      mask_batch=mask_batch)
         predictions = sess.run(self.pred_proba, feed_dict=feed)
@@ -280,7 +280,7 @@ class NERModel(object):
         prog = Progbar(target=1 + int(len(inputs) / self.config.batch_size))
         for i, batch in enumerate(minibatches2(inputs, self.config.batch_size, shuffle=False)):
             preds_ = self.predict_on_batch(sess, input_batch=batch[0], mask_batch=batch[2])
-            preds_proba_ = self.predict_proba_on_batch(sess, inputs_batch=batch[0], mask_batch=batch[2])
+            # preds_proba_ = self.predict_proba_on_batch(sess, input_batch=batch[0], mask_batch=batch[2])
             preds += list(preds_)
             prog.update(i + 1, [])
         return self.consolidate_predictions(inputs_raw, inputs, preds)

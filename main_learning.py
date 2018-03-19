@@ -9,7 +9,10 @@ from models.lstm_model import LSTMConfig, LSTMModel
 from models.naive_model import NaiveConfig, NaiveModel
 from models.bilstm_model import BiLSTMConfig, BiLSTMModel
 from models.stacked_lstm_model import StackedLSTMConfig, StackedLSTMModel
+from models.crf_model import CRFModel
+
 from utils.Embedder import Embedder
+from utils.crf import Crf
 
 
 def main(args):
@@ -40,9 +43,6 @@ def main(args):
         elif args.model == "lstm":
             config = LSTMConfig(args)
             model = LSTMModel(config, embeddings, embedder)
-        elif args.model == "lstmcrf":
-            config = LSTMCRFConfig(args)
-            model = LSTMCRFModel(config, embeddings, embedder)
         elif args.model == "bilstm":
             config = BiLSTMConfig(args)
             model = BiLSTMModel(config, embeddings, embedder)
@@ -53,6 +53,11 @@ def main(args):
         init_op = tf.global_variables_initializer()
         saver = tf.train.Saver()
         print("took {:.2f} seconds\n".format(time.time() - start))
+
+        if args.crf:
+            CRF = Crf([labels for sentence, labels in train_set])
+            model = CRFModel(model, CRF, args)
+
     graph.finalize()
 
     with tf.Session(graph=graph) as session:
@@ -69,9 +74,11 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers()
 
     command_parser = subparsers.add_parser('train', help='')
-    command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "lstmcrf", "bilstm", "stacked_lstm"], default="naive",
+    command_parser.add_argument('-m', '--model', choices=["lstm", "naive", "bilstm", "stacked_lstm"],
+                                default="naive",
                                 help="Type of model to use.")
 
+    command_parser.add_argument('-crf', action='store_true', help="Use a fitted CRF to help predicting labels.")
     command_parser.add_argument('-s1', '--hidden_size', type=int, default=20, help="Size of hidden layers.")
     command_parser.add_argument('-s2', '--other_layer_size', type=int, default=20, help="Size of extra hidden layer.")
     command_parser.add_argument('-e', '--extra_layer', action='store_true',
