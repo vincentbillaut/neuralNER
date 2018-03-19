@@ -83,6 +83,7 @@ if __name__ == '__main__':
     command_parser.add_argument('-n', '--n_epochs', type=int, default=10, help="Number of epochs.")
     command_parser.add_argument('-l2', type=float, default=None, help="Beta for L2 regularization.")
     command_parser.add_argument('-lr', '--learning_rate', type=float, default=0.0005, help="Learning rate.")
+    command_parser.add_argument('-d', '--dropout', type=float, default=0, help="Dropout rate.")
     command_parser.add_argument('-alr', '--adaptative_lr', action='store_true',
                                 help="Use an adaptative learning rate with the AdaGrad method.")
 

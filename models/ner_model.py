@@ -52,6 +52,7 @@ class Config(object):
         self.batch_size = args.batch_size
         self.hidden_size = args.hidden_size
         self.regularization = args.l2
+        self.dropout_rate = args.dropout
         self.adaptative_lr = args.adaptative_lr
 
 
@@ -85,11 +86,6 @@ class NERModel(object):
 
         If labels_batch is None, then no labels are added to feed_dict.
 
-        Hint: The keys for the feed_dict should be a subset of the placeholder
-                    tensors created in add_placeholders.
-        Args:
-            inputs_batch: A batch of input data.
-            labels_batch: A batch of label data.
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
@@ -184,14 +180,16 @@ class NERModel(object):
     def train_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
         feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
                                      labels_batch=labels_batch,
-                                     mask_batch=mask_batch)
+                                     mask_batch=mask_batch
+                                     dropout=self.config.dropout_rate)
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
         return loss
 
     def test_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
         feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
                                      labels_batch=labels_batch,
-                                     mask_batch=mask_batch)
+                                     mask_batch=mask_batch
+                                     dropout=self.config.dropout_rate)
         loss = sess.run([self.loss], feed_dict=feed)
         return loss
 
@@ -205,7 +203,8 @@ class NERModel(object):
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
         feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
-                                     mask_batch=mask_batch)
+                                     mask_batch=mask_batch
+                                     dropout=self.config.dropout_rate)
         predictions = sess.run(self.pred_onehot, feed_dict=feed)
         return predictions
 
@@ -219,7 +218,8 @@ class NERModel(object):
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
         feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
-                                     mask_batch=mask_batch)
+                                     mask_batch=mask_batch
+                                     dropout=self.config.dropout_rate)
         predictions = sess.run(self.pred_proba, feed_dict=feed)
         return predictions
 
