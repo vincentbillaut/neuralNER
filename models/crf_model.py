@@ -107,7 +107,7 @@ class CRFModel(object):
             losses = []
             for i, minibatch in enumerate(
                     minibatches2(train_examples, self.model.config.batch_size, shuffle=True)):
-                loss = self.model.train_on_batch(sess, *minibatch, learning_rate_decay)
+                loss = self.model.train_on_batch(sess, *minibatch, learning_rate_decay=learning_rate_decay)
                 losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
 
