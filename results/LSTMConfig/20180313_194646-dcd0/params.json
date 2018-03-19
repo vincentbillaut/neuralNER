@@ -1,0 +1,17 @@
+{
+ "other_layer_size": 20,
+ "train_fraction": 0.9,
+ "data_train": "data/ner_dataset.csv",
+ "extra_layer": true,
+ "no_result": false,
+ "ee": false,
+ "hidden_size": 50,
+ "tiny": false,
+ "vectors": "data/en-cw.txt",
+ "l2": null,
+ "n_epochs": 40,
+ "batch_size": 128,
+ "learning_rate": 0.005,
+ "adaptative_lr": false,
+ "model": "lstm"
+}
