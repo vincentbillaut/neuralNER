@@ -200,7 +200,7 @@ class NERModel(object):
     def test_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
         feed = self.create_feed_dict(inputs_batch,
                                      labels_batch=labels_batch,
-                                     mask_batch=mask_batch
+                                     mask_batch=mask_batch,
                                      dropout=self.config.dropout_rate)
         loss = sess.run([self.loss], feed_dict=feed)
         return loss
@@ -230,8 +230,8 @@ class NERModel(object):
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
         feed = self.create_feed_dict(inputs_batch,  # .reshape(-1, 1),
-                                     mask_batch=mask_batch
-                                     dropout=self.config.dropout_rate)
+                                     dropout=self.config.dropout_rate,
+                                     mask_batch=mask_batch)
         predictions = sess.run(self.pred_proba, feed_dict=feed)
         return predictions
 
