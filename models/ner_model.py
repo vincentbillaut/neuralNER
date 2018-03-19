@@ -304,7 +304,7 @@ class NERModel(object):
             losses = []
             for i, minibatch in enumerate(
                     minibatches2(train_examples, self.config.batch_size, shuffle=True)):
-                loss = self.train_on_batch(sess, *minibatch, learning_rate_decay)
+                loss = self.train_on_batch(sess, *minibatch, learning_rate_decay=learning_rate_decay)
                 losses.append(loss)
                 prog.update(i + 1, [("loss = ", loss)])
 

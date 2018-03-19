@@ -39,7 +39,6 @@ class CRFModel(object):
                     dico["alpha_i"] = alpha_i
                     json.dump(dico, f, indent=True)
 
-
     def outputCRF(self, sess, inputs_raw, inputs=None):
         """
         Reports the output of the model on examples (uses helper to featurize each example).
