@@ -26,9 +26,9 @@ class LSTMConfig(Config):
         self.extra_layer = args.extra_layer or args.ee
         self.second_extra_layer = args.ee
         self.other_layer_size = args.other_layer_size
-        if (not self.extra_layer) and (self.hidden_size != 17):
-            logger.info("Without extra layer (no -e), hidden_size forced to 17.")
-            self.hidden_size = 17
+        if (not self.extra_layer) and (self.hidden_size != self.config.n_classes):
+            logger.info("Without extra layer (no -e), hidden_size forced to number of classes.")
+            self.hidden_size = self.config.n_classes
 
 
 class LSTMModel(NERModel):

@@ -47,7 +47,7 @@ class Config(object):
         self.log_output = self.output_path + "log"
         self.conll_output = self.output_path + "window_predictions.conll"
         # parameters passed by args
-        self.n_classes = 17 if args.five_classes else 5
+        self.n_classes = 5 if args.five_classes else 17
         self.n_epochs = args.n_epochs
         self.lr = args.learning_rate
         self.batch_size = args.batch_size

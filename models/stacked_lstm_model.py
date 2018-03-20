@@ -24,9 +24,9 @@ class StackedLSTMConfig(LSTMConfig):
         super().__init__(args)
         self.extra_layer = args.extra_layer
         self.other_layer_size = args.other_layer_size
-        if (not self.extra_layer) and (self.other_layer_size != 17):
-            logger.info("Without extra layer (no -e), other_layer_size forced to 17.")
-            self.other_layer_size = 17
+        if (not self.extra_layer) and (self.other_layer_size != self.config.n_classes):
+            logger.info("Without extra layer (no -e), other_layer_size forced to number of classes.")
+            self.other_layer_size = self.config.n_classes
 
 
 class StackedLSTMModel(LSTMModel):
