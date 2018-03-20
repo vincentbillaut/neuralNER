@@ -66,7 +66,7 @@ class CRFModel(object):
 
     def evaluateCRF(self, sess, examples, examples_raw, evaluate=True):
         if not evaluate:
-            return {alpha: 0 for alpha in self.alphasCRF}
+            return {alpha: (0., 0., 0.) for alpha in self.alphasCRF}
 
         token_cm = ConfusionMatrix(labels=self.model.labelsHandler.keys())
 
