@@ -12,13 +12,13 @@
 Vincent Billaut\\
 Department of Statistics\\
 Stanford University\\
-Stanford, PA 94305 \\
+Stanford, CA 94305 \\
 \texttt{vbillaut@stanford.edu} \\
 \And
 Marc Thibault \\
 Institute for Computational and Mathematical Engineering \\
 Stanford University\\
-Stanford, PA 94305 \\
+Stanford, CA 94305 \\
 \texttt{marcthib@stanford.edu} \\
 }
 
@@ -41,42 +41,55 @@ Stanford, PA 94305 \\
 \maketitle
 
 \begin{abstract}
+\textit{MARC}
+
 [It should not be more than 300 words.]
 \end{abstract}
 
 \section{Introduction}
+\textit{VINCENT}
 
 [This section introduces the problem, and your overall approach to the problem.]
 
 \section{Background/Related Work}
+\textit{VINCENT}
 
 [This section discusses relevant literature for your project.]
 
 \section{Approach}
+\textit{MARC}
 
 [This section details your approach to the problem. For example, this is the section where you would describe the architecture of your neural network. You should be specific - you may want to include equations, figures, plots, etc.]
 
 \section{Experiments}
 
-[In this section, you describe: 
+\subsection{Tuning the network architecture}
+\textit{VINCENT}
+
+\subsection{Incorporating the CRF}
+\textit{MARC}
+
+[In this section, you describe:
 \begin{itemize}
 \item The dataset(s) you used
-\item How you ran your experiments (e.g. model configurations, learning rate, training time, etc.) 
-\item The evaluation metric(s) you used 
-\item Your results. It's very important to show both \textit{quantitative evaluation} (show numbers, figures, tables etc. relating to your evaluation metric(s)) and \textit{qualitative evaluation} (show example results, etc.). 
+\item How you ran your experiments (e.g. model configurations, learning rate, training time, etc.)
+\item The evaluation metric(s) you used
+\item Your results. It's very important to show both \textit{quantitative evaluation} (show numbers, figures, tables etc. relating to your evaluation metric(s)) and \textit{qualitative evaluation} (show example results, etc.).
 \end{itemize}]
 
 \section{Conclusion}
+\textit{MARC}
 
 [What have you learned? Suggest future ideas.]
 
 \section{References}
+\textit{VINCENT}
 
 [Include references to all literature that informed your project work. This is absolutely necessary.]
 
 %%\section{Submission of papers to NIPS 2013}
 %%
-%%NIPS requires electronic submissions.  The electronic submission site is  
+%%NIPS requires electronic submissions.  The electronic submission site is
 %%\begin{center}
 %%   \url{http://papers.nips.cc}
 %%\end{center}
@@ -90,7 +103,7 @@ Stanford, PA 94305 \\
 %%including figures. Since 2009 an additional ninth page \textit{containing only
 %%cited references} is allowed. Papers that exceed nine pages will not be
 %%reviewed, or in any other way considered for presentation at the conference.
-%%%This is a strict upper bound. 
+%%%This is a strict upper bound.
 %%
 %%Please note that this year we have introduced automatic line number generation
 %%into the style file (for \LaTeXe and Word versions). This is to help reviewers
@@ -99,7 +112,7 @@ Stanford, PA 94305 \\
 %%style file for the final version of accepted papers.
 %%
 %%The margins in 2013 are the same as since 2007, which allow for $\approx 15\%$
-%%more words in the paper compared to earlier years. We are also again using 
+%%more words in the paper compared to earlier years. We are also again using
 %%double-blind reviewing. Both of these require the use of new style files.
 %%
 %%Authors are required to use the NIPS \LaTeX{} style files obtainable at the
@@ -108,8 +121,8 @@ Stanford, PA 94305 \\
 %%
 %%%% \subsection{Double-blind reviewing}
 %%
-%%%% This year we are doing double-blind reviewing: the reviewers will not know 
-%%%% who the authors of the paper are. For submission, the NIPS style file will 
+%%%% This year we are doing double-blind reviewing: the reviewers will not know
+%%%% who the authors of the paper are. For submission, the NIPS style file will
 %%%% automatically anonymize the author list at the beginning of the paper.
 %%
 %%%% Please write your paper in such a way to preserve anonymity. Refer to
@@ -134,7 +147,7 @@ Stanford, PA 94305 \\
 %%%%
 %%%% Note that your submission is only valid if you get an e-mail
 %%%% confirmation from the server. If you do not get such an e-mail, please
-%%%% try uploading again. 
+%%%% try uploading again.
 %%
 %%
 %%\subsection{Retrieval of style files}
@@ -143,7 +156,7 @@ Stanford, PA 94305 \\
 %%\begin{center}
 %%   \url{http://www.nips.cc/}
 %%\end{center}
-%%The file \verb+nips2013.pdf+ contains these 
+%%The file \verb+nips2013.pdf+ contains these
 %%instructions and illustrates the
 %%various formatting requirements your NIPS paper must satisfy. \LaTeX{}
 %%users can choose between two style files:
@@ -245,12 +258,12 @@ Stanford, PA 94305 \\
 %%references themselves, any style is acceptable as long as it is used
 %%consistently.
 %%
-%%As submission is double blind, refer to your own published work in the 
+%%As submission is double blind, refer to your own published work in the
 %%third person. That is, use ``In the previous work of Jones et al.\ [4]'',
 %%not ``In our previous work [4]''. If you cite your other papers that
 %%are not widely available (e.g.\ a journal paper under review), use
 %%anonymous author names in the citation, e.g.\ an author of the
-%%form ``A.\ Anonymous''. 
+%%form ``A.\ Anonymous''.
 %%
 %%
 %%\subsection{Footnotes}
@@ -272,7 +285,7 @@ Stanford, PA 94305 \\
 %%Make sure the figure caption does not get separated from the figure.
 %%Leave sufficient space to avoid splitting the figure and figure caption.
 %%
-%%You may use color figures. 
+%%You may use color figures.
 %%However, it is best for the
 %%figure captions and the paper body to make sense if the paper is printed
 %%either in black/white or in color.
@@ -341,30 +354,30 @@ Stanford, PA 94305 \\
 %%\begin{itemize}
 %%
 %%\item Consider directly generating PDF files using \verb+pdflatex+
-%%(especially if you are a MiKTeX user). 
+%%(especially if you are a MiKTeX user).
 %%PDF figures must be substituted for EPS figures, however.
 %%
 %%\item Otherwise, please generate your PostScript and PDF files with the following commands:
-%%\begin{verbatim} 
+%%\begin{verbatim}
 %%dvips mypaper.dvi -t letter -Ppdf -G0 -o mypaper.ps
 %%ps2pdf mypaper.ps mypaper.pdf
 %%\end{verbatim}
 %%
-%%Check that the PDF files only contains Type 1 fonts. 
+%%Check that the PDF files only contains Type 1 fonts.
 %%%For the final version, please send us both the Postscript file and
-%%%the PDF file. 
+%%%the PDF file.
 %%
-%%\item xfig "patterned" shapes are implemented with 
-%%bitmap fonts.  Use "solid" shapes instead. 
+%%\item xfig "patterned" shapes are implemented with
+%%bitmap fonts.  Use "solid" shapes instead.
 %%\item The \verb+\bbold+ package almost always uses bitmap
 %%fonts.  You can try the equivalent AMS Fonts with command
 %%\begin{verbatim}
 %%\usepackage[psamsfonts]{amssymb}
 %%\end{verbatim}
-%% or use the following workaround for reals, natural and complex: 
+%% or use the following workaround for reals, natural and complex:
 %%\begin{verbatim}
 %%\newcommand{\RR}{I\!\!R} %real numbers
-%%\newcommand{\Nat}{I\!\!N} %natural numbers 
+%%\newcommand{\Nat}{I\!\!N} %natural numbers
 %%\newcommand{\CC}{I\!\!\!\!C} %complex numbers
 %%\end{verbatim}
 %%
@@ -405,27 +418,27 @@ Stanford, PA 94305 \\
 %%
 %%\end{itemize}
 %%If your file contains Type 3 fonts or non embedded TrueType fonts, we will
-%%ask you to fix it. 
+%%ask you to fix it.
 %%
 %%\subsection{Margins in LaTeX}
-%% 
+%%
 %%Most of the margin problems come from figures positioned by hand using
 %%\verb+\special+ or other commands. We suggest using the command
 %%\verb+\includegraphics+
 %%from the graphicx package. Always specify the figure width as a multiple of
 %%the line width as in the example below using .eps graphics
 %%\begin{verbatim}
-%%   \usepackage[dvips]{graphicx} ... 
-%%   \includegraphics[width=0.8\linewidth]{myfile.eps} 
+%%   \usepackage[dvips]{graphicx} ...
+%%   \includegraphics[width=0.8\linewidth]{myfile.eps}
 %%\end{verbatim}
 %%or % Apr 2009 addition
 %%\begin{verbatim}
-%%   \usepackage[pdftex]{graphicx} ... 
-%%   \includegraphics[width=0.8\linewidth]{myfile.pdf} 
+%%   \usepackage[pdftex]{graphicx} ...
+%%   \includegraphics[width=0.8\linewidth]{myfile.pdf}
 %%\end{verbatim}
-%%for .pdf graphics. 
-%%See section 4.4 in the graphics bundle documentation (\url{http://www.ctan.org/tex-archive/macros/latex/required/graphics/grfguide.ps}) 
-%% 
+%%for .pdf graphics.
+%%See section 4.4 in the graphics bundle documentation (\url{http://www.ctan.org/tex-archive/macros/latex/required/graphics/grfguide.ps})
+%%
 %%A number of width problems arise when LaTeX cannot properly hyphenate a
 %%line. Please give LaTeX hyphenation hints using the \verb+\-+ command.
 %%
@@ -433,15 +446,15 @@ Stanford, PA 94305 \\
 %%\subsubsection*{Acknowledgments}
 %%
 %%Use unnumbered third level headings for the acknowledgments. All
-%%acknowledgments go at the end of the paper. Do not include 
-%%acknowledgments in the anonymized submission, only in the 
-%%final paper. 
+%%acknowledgments go at the end of the paper. Do not include
+%%acknowledgments in the anonymized submission, only in the
+%%final paper.
 %%
 %%\subsubsection*{References}
 %%
 %%References follow the acknowledgments. Use unnumbered third level heading for
 %%the references. Any choice of citation style is acceptable as long as you are
-%%consistent. It is permissible to reduce the font size to `small' (9-point) 
+%%consistent. It is permissible to reduce the font size to `small' (9-point)
 %%when listing the references. {\bf Remember that this year you can use
 %%a ninth page as long as it contains \emph{only} cited references.}
 %%
