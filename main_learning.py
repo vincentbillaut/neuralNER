@@ -78,6 +78,9 @@ if __name__ == '__main__':
                                 default="naive",
                                 help="Type of model to use.")
 
+    command_parser.add_argument('-f', '--five_classes', action='store_true',
+                                help="Whether to train on the set of five classes (ORG, PER, LOC, MISC, O) instead of the original 17.")
+
     command_parser.add_argument('-crf', action='store_true', help="Use a fitted CRF to help predicting labels.")
     command_parser.add_argument('-s1', '--hidden_size', type=int, default=20, help="Size of hidden layers.")
     command_parser.add_argument('-s2', '--other_layer_size', type=int, default=20, help="Size of extra hidden layer.")
