@@ -25,7 +25,7 @@ class CRFModel(object):
     def __init__(self, model, CRF, args):
         self.model = model
         self.CRF = CRF
-        self.alphasCRF = np.logspace(-2.5, -1.5, 20)
+        self.alphasCRF = np.concatenate([[0], np.logspace(-2.5, 0, 20)])
         self.alphasOutputPaths = {alpha: self.model.config.output_path + "alpha_" + str(alpha_i) + "/" for
                                   alpha_i, alpha in enumerate(self.alphasCRF)}
 
@@ -64,7 +64,10 @@ class CRFModel(object):
 
         return {alpha: self.model.consolidate_predictions(inputs_raw, inputs, preds[alpha]) for alpha in self.alphasCRF}
 
-    def evaluateCRF(self, sess, examples, examples_raw):
+    def evaluateCRF(self, sess, examples, examples_raw, evaluate=True):
+        if not evaluate:
+            return {alpha: (0., 0., 0.) for alpha in self.alphasCRF}
+
         token_cm = ConfusionMatrix(labels=self.model.labelsHandler.keys())
 
         correct_preds, total_correct, total_preds = 0., 0., 0.
@@ -114,7 +117,8 @@ class CRFModel(object):
             logger.info("Evaluating on training data")
             train_entity_scoresByAlpha = self.evaluateCRF(sess,
                                                           [train_examples[ind] for ind in random_train_examples_id],
-                                                          [train_examples_raw[ind] for ind in random_train_examples_id])
+                                                          [train_examples_raw[ind] for ind in random_train_examples_id],
+                                                          evaluate=(epoch == self.model.config.n_epochs - 1))
             for alpha in train_entity_scoresByAlpha:
                 train_entity_scores = train_entity_scoresByAlpha[alpha]
                 p, r, f1 = train_entity_scores
@@ -135,7 +139,8 @@ class CRFModel(object):
                 break
             dev_entity_scoresByAlpha = self.evaluateCRF(sess,
                                                         dev_examples,
-                                                        dev_examples_raw)
+                                                        dev_examples_raw,
+                                                        evaluate=(epoch == self.model.config.n_epochs - 1))
 
             bestAlphaF1 = max(self.alphasCRF, key=lambda alpha: dev_entity_scoresByAlpha[alpha][-1])
             logger.info("Entity level best P/R/F1: %.2f/%.2f/%.2f", *(dev_entity_scoresByAlpha[bestAlphaF1]))

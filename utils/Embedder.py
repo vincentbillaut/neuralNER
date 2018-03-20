@@ -4,7 +4,7 @@ import time
 import numpy as np
 from functools import reduce
 
-from utils.LabelsHandler import LabelsHandler
+from utils.LabelsHandler import LabelsHandler, LabelsHandler5
 
 
 class Embedder(object):
@@ -23,6 +23,7 @@ class Embedder(object):
     def __init__(self, args):
         self.train_file = args.data_train
         self.embedding_file = args.vectors
+        self.five_classes = args.five_classes
 
     def read_conll(seld, path, lowercase=False):
         """
@@ -71,7 +72,7 @@ class Embedder(object):
         self.tok2id = {l: i for (i, l) in enumerate(unique_words)}
         learning_set_embedded = [(self.embed_sentence(sentence), label) for sentence, label in learning_set]
 
-        labels_handler = LabelsHandler()
+        labels_handler = LabelsHandler5() if self.five_classes else LabelsHandler()
         learning_set_embedded_labelled = [(train_example, labels_handler.to_label_ids(labels))
                                           for train_example, labels in learning_set_embedded]
         print("took {:.2f} seconds".format(time.time() - start))
