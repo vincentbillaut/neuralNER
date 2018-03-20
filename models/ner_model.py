@@ -201,7 +201,7 @@ class NERModel(object):
         feed = self.create_feed_dict(inputs_batch,
                                      labels_batch=labels_batch,
                                      mask_batch=mask_batch,
-                                     dropout=self.config.dropout_rate)
+                                     dropout=0.0)
         loss = sess.run([self.loss], feed_dict=feed)
         return loss
 
@@ -215,7 +215,7 @@ class NERModel(object):
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
         feed = self.create_feed_dict(input_batch,
-                                     dropout=self.config.dropout_rate,
+                                     dropout=0.0,
                                      mask_batch=mask_batch)
         predictions = sess.run(self.pred_onehot, feed_dict=feed)
         return predictions
@@ -230,7 +230,7 @@ class NERModel(object):
             predictions: np.ndarray of shape (n_samples, n_classes)
         """
         feed = self.create_feed_dict(input_batch,  # .reshape(-1, 1),
-                                     dropout=self.config.dropout_rate,
+                                     dropout=0.0,
                                      mask_batch=mask_batch)
         predictions = sess.run(self.pred_proba, feed_dict=feed)
         return predictions

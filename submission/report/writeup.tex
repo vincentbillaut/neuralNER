@@ -48,22 +48,25 @@ Stanford, CA 94305 \\
 \end{abstract}
 
 \section{Introduction}
-\textit{VINCENT}
 
-[This section introduces the problem, and your overall approach to the problem.]
+%\textit{VINCENT}
 
-Named Entity Recognition (NER) is one of the main classes of problems tackled by Natural Language Processing. The goal is to identify named entities in sentences, and it can be most useful for [???]. 
+%[This section introduces the problem, and your overall approach to the problem.]
+
+Named Entity Recognition (NER) is one of the main classes of problems tackled by Natural Language Processing. The goal is to identify named entities in sentences, and it can be most relevant for information retrieval or text classification in domains like healthcare. 
 One of the main challenges with NER is the lack of labeled data, and 
-most approaches, before deep learning became commonplace in NLP, used to mostly rely on hand-made rules and features to perform well, and therefore lacked a great deal of robustness and generalizability, in particular when trying to learn or be applied across languages.
+most approaches, before deep learning became commonplace in NLP, used to mostly rely on hand-made rules and features to perform well, but therefore lacked a great deal of robustness and generalizability, in particular when trying to learn or be applied across languages (and a language-agnostic model is one of the key objectives in NER today).
 
 The more recent approaches to NER all tackle the problem in a \textit{deep} fashion, and perform significantly better than previous ones. Some try to use unsupervised learning as a way to augment existing features and provide more insight to the model, but the core of the task remains supervised.
 
-Our goal is to implement various techniques that we have come across in the literature, and to compare their performances against simple, well-tuned models (like simple bi-directional LSTMs) to try and assess whether fanciness is really necessary for NER. Additionally, 
+Our goal is to implement various techniques that we have come across in the literature, and to compare their performances against simple, well-tuned models (like simple bi-directional LSTMs) to try and assess whether fanciness is really necessary for NER. Additionally, we want to gain insight on the misclassifications of the various well-performing models that emerge, by conducting an error study and figuring out each approache's strengths and weaknesses.
 
 \section{Background/Related Work}
-\textit{VINCENT}
+%\textit{VINCENT}
 
-[This section discusses relevant literature for your project.]
+%[This section discusses relevant literature for your project.]
+
+\cite{lample2016neural} was the first source of motivation for our work. The relatively recent idea of bringing together a classical Markovian tool --- namely conditional random fields (CRF) --- that had shown promising results on its own (see \cite{mccallum2003early}) and the modern deep learning approach, as has been tried on sequence tagging in \cite{huang2015bidirectional}, particularly appealed to us. As a matter of fact, one of our main concerns with this hybrid approach is that is doesn't seem like a very natural way to tackle the problem, and so one question guiding our experimentation process was whether it would be possible to reach similar performances without it, but instead by fine-tuning a neural model.
 
 
 
@@ -75,7 +78,7 @@ Our goal is to implement various techniques that we have come across in the lite
 Our task is classification of each word within a sentence into one of
 the NER categories. Our model consists of an embedding layer, projecting
 each word of the vocabulary into a $50$-dimensional space. The word
-embedding is initialized with GloVe [1] (TODO) vectors, and is further trained for this specific
+embedding is initialized with GloVe (\cite{pennington2014glove}) vectors, and is further trained for this specific
 task.
 
 We then use a Recurrent Neural Network (RNN) on these embedded words, to
@@ -84,7 +87,7 @@ past-dependent task. On the outputs of each RNN cell, we apply an extra
 non-linearly activated layer, to transform the outputs of the Recurrent
 Network into vectors of the same shape as the number of predicted
 classes. We finally apply a softmax transformation, and use
-Crosse-Entropy as a loss.
+Cross-Entropy loss.
 
 We also used enhancements of this base model:
 
@@ -146,9 +149,7 @@ z_t &= argmax_j(\hat{y}_t[j] + \alpha.P[z_{t-1},  j]) \ \ \forall t \in [1, T]
 
 
 Where $\alpha$ is a hyper-parameter which has to be chosen. This
-choice of method is meant to partially reproduce the method developed in
-{[}2{]} (TODO), by reducing the search beam to a greedy iterative
-algorithm.
+choice of method is meant to partially reproduce the method developed in \cite{lample2016neural}, by reducing the search beam to a greedy iterative algorithm.
 
 
 \section{Experiments}
@@ -172,10 +173,24 @@ algorithm.
 
 [What have you learned? Suggest future ideas.]
 
-\section{References}
-\textit{VINCENT}
+\bibliography{references}
+\bibliographystyle{plain}
 
-[Include references to all literature that informed your project work. This is absolutely necessary.]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %%\section{Submission of papers to NIPS 2013}
 %%
