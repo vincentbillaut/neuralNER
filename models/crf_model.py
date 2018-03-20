@@ -25,7 +25,7 @@ class CRFModel(object):
     def __init__(self, model, CRF, args):
         self.model = model
         self.CRF = CRF
-        self.alphasCRF = np.logspace(-3, 3, 20)
+        self.alphasCRF = np.logspace(-2.5, -1.5, 20)
         self.alphasOutputPaths = {alpha: self.model.config.output_path + "alpha_" + str(alpha_i) + "/" for
                                   alpha_i, alpha in enumerate(self.alphasCRF)}
 
@@ -111,6 +111,7 @@ class CRFModel(object):
                 prog.update(i + 1, [("loss = ", loss)])
 
             random_train_examples_id = random.sample(range(len(train_examples)), k=len(dev_examples))
+            logger.info("Evaluating on training data")
             train_entity_scoresByAlpha = self.evaluateCRF(sess,
                                                           [train_examples[ind] for ind in random_train_examples_id],
                                                           [train_examples_raw[ind] for ind in random_train_examples_id])
