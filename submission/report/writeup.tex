@@ -2,6 +2,7 @@
 \usepackage{nips13submit_e,times}
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage{amsmath}
 %\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
 
 
@@ -57,9 +58,87 @@ Stanford, CA 94305 \\
 [This section discusses relevant literature for your project.]
 
 \section{Approach}
-\textit{MARC}
 
-[This section details your approach to the problem. For example, this is the section where you would describe the architecture of your neural network. You should be specific - you may want to include equations, figures, plots, etc.]
+\subsection{Base Recurrent model}
+
+Our task is classification of each word within a sentence into one of
+the NER categories. Our model consists of an embedding layer, projecting
+each word of the vocabulary into a $50$-dimensional space. The word
+embedding is initialized with GloVe [1] (TODO) vectors, and is further trained for this specific
+task.
+
+We then use a Recurrent Neural Network (RNN) on these embedded words, to
+leverage the appearance of memory in the network, in this highly
+past-dependent task. On the outputs of each RNN cell, we apply an extra
+non-linearly activated layer, to transform the outputs of the Recurrent
+Network into vectors of the same shape as the number of predicted
+classes. We finally apply a softmax transformation, and use
+Crosse-Entropy as a loss.
+
+We also used enhancements of this base model:
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  using LSTM cells instead of classical RNN cells to have a more stable
+  memory flux;
+\item
+  using a Bi-directional Recurrent Network to take into account future
+  information;
+\item
+  using two (instead of one) extra layers on the outputs of the RNN;
+\item
+  stacking two Recurrent Networks (one being the input of the other);
+\item
+  using L2-regularization on learned non-bias parameters;
+\item
+  using Dropout on the outputs of the RNN.
+\end{itemize}
+
+Consequently, our base Bi-directional LSTM model may be described in the
+following fashion, with $x_t$ being the input words' embeddings:
+
+\begin{align*}
+&s^F_0, h^F_0 = 0;\ s^B_T, h^B_T = 0; &\textit{initialize LSTMs states}
+\\
+&s^F_t, o^F_t = LSTM^F(s^F_{t-1}, o^F_{t-1}, x_t) \ \ \forall t \in [1, T] &\textit{propagate in forward LSTM}
+\\
+&s^B_t, o^B_t = LSTM^B(s^B_{t+1}, o^B_{t+1}, x_t) \ \ \forall t \in [0, T-1] &\textit{propagate in backward LSTM}
+\\
+& o_t = [o^F_t, o^B_t] & \textit{concatenate outputs}
+\\
+& \theta_t = \sigma(W.o_t + b) & \textit{add extra layer}
+\\
+& \hat{y}_t =softmax(\theta_t) & \textit{apply softmax}
+\\
+& loss = CE(\hat{y}_t, y_t) & \textit{compute cross-entropy}
+\end{align*}
+
+
+\subsection{Incorporating the Conditional Random Field}
+
+We also chose to incorporate the information of a CRF fitted on the
+train data. It encodes a Markov Chain, describing the probability of
+transitioning from a given predicted label to another: \[
+P[i, j] = Pr(y_{t+1} = y_j | y_{t} =y_i) \textit{ in training set}
+\] We use this information to help us in predicting labels, from the
+outputs $\hat{y}_t$ of the Recurrent Network, using the following
+iterative method:
+
+\begin{align*}
+z_0 &= argmax_j(\hat{y}_0[j])
+\\
+\text{and}&
+\\
+z_t &= argmax_j(\hat{y}_t[j] + \alpha.P[z_{t-1},  j]) \ \ \forall t \in [1, T]
+\end{align*}
+
+
+Where $\alpha$ is a hyper-parameter which has to be chosen. This
+choice of method is meant to partially reproduce the method developed in
+{[}2{]} (TODO), by reducing the search beam to a greedy iterative
+algorithm.
+
 
 \section{Experiments}
 
