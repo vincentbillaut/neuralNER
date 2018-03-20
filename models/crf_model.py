@@ -25,7 +25,7 @@ class CRFModel(object):
     def __init__(self, model, CRF, args):
         self.model = model
         self.CRF = CRF
-        self.alphasCRF = np.concatenate([[0], np.logspace(-2.5, -1.5, 20)])
+        self.alphasCRF = np.concatenate([[0], np.logspace(-2.5, 0, 20)])
         self.alphasOutputPaths = {alpha: self.model.config.output_path + "alpha_" + str(alpha_i) + "/" for
                                   alpha_i, alpha in enumerate(self.alphasCRF)}
 
