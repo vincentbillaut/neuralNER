@@ -76,22 +76,10 @@ class LabelsHandler5(object):
         return np.array([self.labels_map[label] for label in labels])
 
     def keys(self):
-        return ['B-art',
-                'B-eve',
-                'B-geo',
-                'B-gpe',
-                'B-nat',
-                'B-org',
-                'B-per',
-                'B-tim',
-                'I-art',
-                'I-eve',
-                'I-geo',
-                'I-gpe',
-                'I-nat',
-                'I-org',
-                'I-per',
-                'I-tim',
+        return ['MISC',
+                'LOC',
+                'ORG',
+                'PER',
                 'O']
 
     def num_labels(self):
