@@ -43,9 +43,8 @@ Stanford, CA 94305 \\
 \maketitle
 
 \begin{abstract}
-\textit{MARC}
 
-[It should not be more than 300 words.]
+Named Entity Recognition is a complex labelling task, and algorithm built to tackle it need to incorporate the whole sentence information to best understand a word's context, in order to yield an optimal predicting performance. In this report, we have explored various ways of taking into account a sentence's crucial past and forward dependencies to enhance the performance of standard deep learning algorithms. We have focused on the impact of memory in a network (using LSTMs), we have expanded it to incorporate forward information (through BiLSTMs), and we have explored a contribution from \cite{lample2016neural}, using a Conditional Random Field to directly consider the dependencies between predicted labels.
 \end{abstract}
 
 \section{Introduction}
@@ -54,8 +53,8 @@ Stanford, CA 94305 \\
 
 %[This section introduces the problem, and your overall approach to the problem.]
 
-Named Entity Recognition (NER) is one of the main classes of problems tackled by Natural Language Processing. The goal is to identify named entities in sentences, and it can be most relevant for information retrieval or text classification in domains like healthcare. 
-One of the main challenges with NER is the lack of labeled data, and 
+Named Entity Recognition (NER) is one of the main classes of problems tackled by Natural Language Processing. The goal is to identify named entities in sentences, and it can be most relevant for information retrieval or text classification in domains like healthcare.
+One of the main challenges with NER is the lack of labeled data, and
 most approaches, before deep learning became commonplace in NLP, used to mostly rely on hand-made rules and features to perform well, but therefore lacked a great deal of robustness and generalizability, in particular when trying to learn or be applied across languages (and a language-agnostic model is one of the key objectives in NER today).
 
 The more recent approaches to NER all tackle the problem in a \textit{deep} fashion, and perform significantly better than previous ones. Some try to use unsupervised learning as a way to augment existing features and provide more insight to the model, but the core of the task remains supervised.
@@ -133,12 +132,13 @@ following fashion, with $x_t$ being the input words' embeddings:
 \subsection{Incorporating the Conditional Random Field}
 
 We also chose to incorporate the information of a CRF fitted on the
-train data. It encodes a Markov Chain, describing the probability of
-transitioning from a given predicted label to another: \[
+train data, as suggested by Lample et al\cite{lample2016neural}. It encodes a Markov Chain, describing the probability of transitioning from a given predicted label to another: \[
 P[i, j] = Pr(y_{t+1} = y_j | y_{t} =y_i) \textit{ in training set}
-\] We use this information to help us in predicting labels, from the
-outputs $\hat{y}_t$ of the Recurrent Network, using the following
-iterative method:
+\]
+
+, where $P$ is a stochastic matrix of size $(k.k)$, where $k$ is the number of considered classes. However, we tried to use the information of the CRF in a different way than in this paper. Instead of using the transition matrix $P$ at each learning step, we use it only for prediction. This approach allows the CRF to be incorporated as an extraneous source of information on top of any trained predictor.
+
+Consequently, we chose to use this information to help us in predicting labels, from the outputs $\hat{y}_t$ of the Recurrent Network, using an iterative method. We begin by labelling the first word by taking the optimal prediction outputed by the network. For further words, we select the maximum of a weighted combination of the network's output, and the probability of transitioning from the previously labelled word to the other considered labels:
 
 \begin{align*}
 z_0 &= argmax_j(\hat{y}_0[j])
@@ -230,10 +230,48 @@ The other learning parameter we looked at in details is the dropout rate. It giv
 \item Your results. It's very important to show both \textit{quantitative evaluation} (show numbers, figures, tables etc. relating to your evaluation metric(s)) and \textit{qualitative evaluation} (show example results, etc.).
 \end{itemize}]
 
+We have tried to incorporate the prediction of a pre-trained CRF on top of two models: a simple LSTM model with $50$ recurrent cells, as well as our best-performing model, a Bidirectional LSTM. We have tried several values of the $\alpha$ parameter on an exponential scale, to see which one yields the best predicting performance. The $\alpha$ value which performs best on the train set is the one we will choose for evaluating our dev set.
+
+We have summarized the results of varying the CRF's $\alpha$ parameter on a simple LSTM model in Fig \ref{lstm-crf-results}. First, we see that the dev $F_1$ performance curve closely follows the  train $F_1$ curve. This means that tuning the $\alpha$ parameter does not lead to an overfitting on specific subsets of the studied set. However, we obtain disappointing results on the contribution of the information of the CRF. The best results are obtained by not considering the CRF. Using more information from the CRF yields a steady decrease in $F_1$ performance.
+
+It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the Recurrent Network before being able to contribute in a constructive way. 
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=250px]{figs/LSTM-CRF-vs-alpha.png}
+\caption{Train and Dev set performance of a LSTM model, incorporating a CRF on the prediction step, versus the importance $\alpha$ given to the CRF. No positive level of importance yields superior performance. The best decision is not to use the extra information from the CRF. }
+\label{lstm-crf-results}
+\end{center}
+\end{figure}
+
 \section{Conclusion}
 \textit{MARC}
 
-[What have you learned? Suggest future ideas.]
+We have produced the following table to summarize our main results for each attempted technique.
+
+\begin{center}
+ \begin{tabular}{||c | c||}
+ \hline
+ Model  & Dev $F_1$ \\
+ \hline\hline
+ Naive word-by-word & $0.691$ \\
+ \hline
+ LSTM & $0.597$ \\
+ \hline
+ LSTM + CRF & $0.475$ \\
+ \hline
+ LSTM + extra layer & $0.770$ \\
+ \hline
+ LSTM + extra layer + CRF & $0.770$ \\
+ \hline
+ Bi-LSTM & $0.796$ \\ [1ex]
+ \hline
+\end{tabular}
+\end{center}
+
+Opening :
+- to enhance CRF, bidirectional CRF? Incorporating CRF on training?
+
 
 \newpage
 \bibliography{references}

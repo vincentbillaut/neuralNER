@@ -309,9 +309,12 @@ class NERModel(object):
                 prog.update(i + 1, [("loss = ", loss)])
 
             random_train_examples_id = random.sample(range(len(train_examples)), k=len(dev_examples))
-            _, train_entity_scores = self.evaluate(sess,
-                                                   [train_examples[ind] for ind in random_train_examples_id],
-                                                   [train_examples_raw[ind] for ind in random_train_examples_id])
+            try:
+                _, train_entity_scores = self.evaluate(sess,
+                                                       [train_examples[ind] for ind in random_train_examples_id],
+                                                       [train_examples_raw[ind] for ind in random_train_examples_id])
+            except IndexError:
+                train_entity_scores = (-1, -1, -1)
             p, r, f1 = train_entity_scores
             if not self.config.no_result_storage:
                 with open(self.config.output_path + "train_losses.los", "a") as f:

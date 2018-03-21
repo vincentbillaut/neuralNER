@@ -117,8 +117,10 @@ class CRFModel(object):
             logger.info("Evaluating on training data")
             train_entity_scoresByAlpha = self.evaluateCRF(sess,
                                                           [train_examples[ind] for ind in random_train_examples_id],
-                                                          [train_examples_raw[ind] for ind in random_train_examples_id],
+                                                          [train_examples_raw[ind] for ind in
+                                                           random_train_examples_id],
                                                           evaluate=(epoch == self.model.config.n_epochs - 1))
+
             for alpha in train_entity_scoresByAlpha:
                 train_entity_scores = train_entity_scoresByAlpha[alpha]
                 p, r, f1 = train_entity_scores
