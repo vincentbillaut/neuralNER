@@ -1,5 +1,6 @@
 \documentclass{article} % For LaTeX2e
 \usepackage{nips13submit_e,times}
+\usepackage[pdftex]{graphicx}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{amsmath}
@@ -156,6 +157,65 @@ choice of method is meant to partially reproduce the method developed in \cite{l
 
 \subsection{Tuning the network architecture}
 \textit{VINCENT}
+
+Our main study consists in exploring the different architectures and parameters, and determining which perform best for our task. First we comapred the main architecture schemes: a simple feed-forward neural network, an LSTM, and a bi-directional LSTM, each time finding near-optimal settings for hidden layer sizes and learning rates. Then, restraining ourselves on the best performing one, we tried tuning two other parameters: the L2 regularization parameter and the dropout rate.
+
+\subsubsection{Network architecture}
+
+First of all, we wanted to have a good-enough baseline, upon which to build and experiment later on. We tried the following architectures:
+\begin{itemize}
+\item simple feed-forward neural network,
+\item LSTM with prediction layer on top,
+\item LSTM with two layers on top,
+\item bi-LSTM with prediction layer on top,
+\item bi-LSTM with two layers on top,
+\item stacked LSTMs.
+\end{itemize}
+
+
+
+\subsubsection{L2 regularization}
+
+Once satisfied with a "baseline" model, we tried tuning L2 regularization, keeping everything else fixed.
+
+L2 regularization can be written as follows: $$regularized_loss = loss + \beta (||W_1||_2+||W_2||_2+...)$$ where the $W_j$ are the parameter matrices involved in the model, and $\beta$ is the regularization parameter, which determines how strong we want to penalize large parameters.
+
+We tried a rather wide grid of values for $\beta$, and could compare each one's performance, both looking at the learning curves (Fig \ref{l2_devf1}) and at the best performance (Fig \ref{l2_graph}).
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=380px]{figs/l2_devf1.png}
+\caption{Learning curves for different $\beta$ values (dev set F1 score as a function of the number of epochs) ; we see that surprinsingly, no regularized model reaches the out-of-sample performance of the unregularized baseline}
+\label{l2_devf1}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=250px]{figs/l2_graph.png}
+\caption{Best performance of the model, as a function of the regularization parameter}
+\label{l2_graph}
+\end{center}
+\end{figure}
+
+\subsubsection{Dropout rate}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=380px]{figs/dr_devf1.png}
+\caption{Learning curves for different dropout rates (dev set F1 score as a function of the number of epochs) ; we see that the most optimal dropout rate for learning is around 20\%}
+\label{dr_devf1}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=250px]{figs/dr_graph.png}
+\caption{Best performance of the model, as a function of the keep rate = 1 - dropout rate}
+\label{dr_graph}
+\end{center}
+\end{figure}
 
 \subsection{Incorporating the CRF}
 \textit{MARC}
