@@ -155,6 +155,10 @@ choice of method is meant to partially reproduce the method developed in \cite{l
 
 \section{Experiments}
 
+\subsection{The data}
+
+TODO
+
 \subsection{Tuning the network architecture}
 \textit{VINCENT}
 
@@ -174,31 +178,6 @@ First of all, we wanted to have a good-enough baseline, upon which to build and 
 
 [TODO ADD GRAPH COMPARING DIFFERENT ARCHITECTURES]
 
-\subsubsection{L2 regularization}
-
-Once satisfied with a "baseline" model, we tried tuning L2 regularization, keeping everything else fixed.
-
-L2 regularization can be written as follows: $$regularized~loss = loss + \beta~(||W_1||_2+||W_2||_2+...)$$ where the $W_j$ are the weights matrices involved in the model, and $\beta$ is the regularization hyper-parameter, which determines how strong we want to penalize large weights.
-
-We tried a rather wide grid of values for $\beta$, and could compare each one's performance, both looking at the learning curves (Fig \ref{l2_devf1}) and at the best performance (Fig \ref{l2_graph}).
-
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=380px]{figs/l2_devf1.png}
-\caption{Learning curves for different $\beta$ values (dev set F1 score as a function of the number of epochs) ; we see that surprinsingly, no regularized model reaches the out-of-sample performance of the unregularized baseline}
-\label{l2_devf1}
-\end{center}
-\end{figure}
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=250px]{figs/l2_graph.png}
-\caption{Best performance of the model, as a function of the regularization parameter}
-\label{l2_graph}
-\end{center}
-\end{figure}
-
 \subsubsection{Dropout rate}
 
 The other learning parameter we looked at in details is the dropout rate. It gives the portion of the neurons of a layer we want arbitrarily desactivated at each pass over the network, and it's designed to give the network more robustness (because the neurons "learn" to not depend too much on each other). We find that the best performances are achieved with a dropout rate around 20\%, as shown in Fig \ref{dr_graph} and \ref{dr_devf1}.
@@ -216,6 +195,31 @@ The other learning parameter we looked at in details is the dropout rate. It giv
 \includegraphics[width=250px]{figs/dr_graph.png}
 \caption{Best performance of the model, as a function of the keep rate (1 - dropout rate)}
 \label{dr_graph}
+\end{center}
+\end{figure}
+
+\subsubsection{L2 regularization}
+
+Once satisfied with a "baseline" model, we tried tuning L2 regularization, keeping everything else fixed.
+
+L2 regularization can be written as follows: $$regularized~loss = loss + \beta~(||W_1||_2+||W_2||_2+...)$$ where the $W_j$ are the weights matrices involved in the model, and $\beta$ is the regularization hyper-parameter, which determines how strong we want to penalize large weights.
+
+We tried a rather wide grid of values for $\beta$, and could compare each one's performance, both looking at the learning curves (Fig \ref{l2_devf1}) and at the best performance (Fig \ref{l2_graph}). Surprinsingly, the unregularized baseline is almost unbeatable. Still, we consider that sane to introduce some weight penalization, and therefore keep $\beta=3~10^{-5}$.
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=380px]{figs/l2_devf1.png}
+\caption{Learning curves for different $\beta$ values (dev set F1 score as a function of the number of epochs) ; we see that surprinsingly, few regularized models reach the out-of-sample performance of the unregularized baseline}
+\label{l2_devf1}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=250px]{figs/l2_graph.png}
+\caption{Best performance of the model, as a function of the regularization parameter}
+\label{l2_graph}
 \end{center}
 \end{figure}
 

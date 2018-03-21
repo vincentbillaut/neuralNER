@@ -300,10 +300,10 @@ The scores reported in the papers we looked at are obtained by working on the sa
 \begin{block}{L2 regularization study}
 
 \begin{center}
-\includegraphics[scale=0.5]{figs/placeholder.png}
+\includegraphics[scale=0.5]{figs/l2_graph.png}
 \end{center}
 
-Surprisingly, no regularized model beats the baseline in terms of F1 score on the dev set. Although this seemed suspicious, we still chose to discard regularization in what followed.
+Surprisingly, no regularized model significantly beats the baseline in terms of F1 score on the dev set. Still, we consider that introducing some regularization is safer for robustness, and therefore keep an L2 regularization parameter $\beta=3~10^{-5}$.
 
 \end{block}
 
