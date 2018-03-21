@@ -1,0 +1,395 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Jacobs Landscape Poster
+% LaTeX Template
+% Version 1.1 (14/06/14)
+%
+% Created by:
+% Computational Physics and Biophysics Group, Jacobs University
+% https://teamwork.jacobs-university.de:8443/confluence/display/CoPandBiG/LaTeX+Poster
+%
+% Further modified by:
+% Nathaniel Johnston (nathaniel@njohnston.ca)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[final]{beamer}
+
+\usepackage[scale=0.8]{beamerposter} % Use the beamerposter package for laying out the poster
+\usepackage{cgloss4e}
+
+\usetheme{confposter} % Use the confposter theme supplied with this template
+
+\setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
+\setbeamercolor{block body}{fg=black,bg=white} % Colors of the body of blocks
+\setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
+\setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
+% Many more colors are available for use in beamerthemeconfposter.sty
+
+%-----------------------------------------------------------
+% Define the column widths and overall poster size
+% To set effective sepwid, onecolwid and twocolwid values, first choose how many columns you want and how much separation you want between columns
+% In this template, the separation width chosen is 0.024 of the paper width and a 4-column layout
+% onecolwid should therefore be (1-(# of columns+1)*sepwid)/# of columns e.g. (1-(4+1)*0.024)/4 = 0.22
+% Set twocolwid to be (2*onecolwid)+sepwid = 0.464
+% Set threecolwid to be (3*onecolwid)+2*sepwid = 0.708
+
+\newlength{\sepwid}
+\newlength{\onecolwid}
+\newlength{\twocolwid}
+\newlength{\threecolwid}
+\setlength{\paperwidth}{36in} % A0 width: 46.8in
+\setlength{\paperheight}{24in} % A0 height: 33.1in
+\setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
+\setlength{\onecolwid}{0.22\paperwidth} % Width of one column
+\setlength{\twocolwid}{0.464\paperwidth} % Width of two columns
+\setlength{\threecolwid}{0.708\paperwidth} % Width of three columns
+\setlength{\topmargin}{-0.5in} % Reduce the top margin size
+%-----------------------------------------------------------
+
+\usepackage{graphicx}  % Required for including images
+
+\usepackage{booktabs} % Top and bottom rules for tables
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{Exploring neural architectures for NER} % Poster title
+
+\author{Vincent Billaut, Marc Thibault} % Author(s)
+
+\institute{CS224n, Stanford University, 03/21/2018} % Institution(s)
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
+\addtobeamertemplate{block alerted end}{}{\vspace*{2ex}} % White space under highlighted (alert) blocks
+
+\setlength{\belowcaptionskip}{2ex} % White space under figures
+\setlength\belowdisplayshortskip{2ex} % White space under equations
+
+\begin{frame}[t] % The whole poster is enclosed in one beamer frame
+
+\begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+\begin{column}{\onecolwid} % The first column
+
+%----------------------------------------------------------------------------------------
+%	OBJECTIVES
+%----------------------------------------------------------------------------------------
+
+% \begin{alertblock}{Objectives}
+
+% Lorem ipsum dolor sit amet, consectetur, nunc tellus pulvinar tortor, commodo eleifend risus arcu sed odio:
+% \begin{itemize}
+% \item Mollis dignissim, magna augue tincidunt dolor, interdum vestibulum urna
+% \item Sed aliquet luctus lectus, eget aliquet leo ullamcorper consequat. Vivamus eros sem, iaculis ut euismod non, sollicitudin vel orci.
+% \item Nascetur ridiculus mus.
+% \item Euismod non erat. Nam ultricies pellentesque nunc, ultrices volutpat nisl ultrices a.
+% \end{itemize}
+
+% \end{alertblock}
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Motivation}
+    \begin{itemize}
+      \item NER with many classes is a complex task
+      \item NER requires a thin understanding of context information
+      \item We need to incorporate past and future dependencies
+      \item A CRF implements a memory flow on labels
+    \end{itemize}
+
+\end{block}
+
+%------------------------------------------------
+\begin{block}{Dataset: CoNLL-2002}
+
+Labelled new articles:
+
+\begin{tabbing}
+``\=The \=protest \=comes \=on \=the \=eve \=of \=the \=annual \=conference \\
+\>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0
+\end{tabbing}
+
+\begin{tabbing}
+of \=Britain\='s \=ruling \=Labor \=Party \=in \=the \=southern \\
+
+0 \>B-geo \>0 \>0 \>B-org \>I-org \>0 \>0 \>0
+\end{tabbing}
+
+\begin{tabbing}
+English \=seaside \=resort \=of \=Brighton. `` \\
+
+B-gpe \>0 \>0 \>0 \>B-geo
+\end{tabbing}
+\end{block}
+
+%------------------------------------------------
+\begin{block}{Time Series}
+
+For each of the studied articles, we considered daily recordings of traffic data, over a year and a half (2015 and 2016).
+
+\vspace{5mm}
+
+Each of these 6400 time series has a structure made of calm periods and surge moments. We see that several kinds of articles lie on way different levels of magnitude. We will have to take these issues into consideration when comparing them.
+
+\end{block}
+
+
+\end{column} % End of the first column
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+\begin{column}{\twocolwid} % Begin a column which is two columns wide (column 2)
+
+\begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column
+
+\begin{column}{\onecolwid}\vspace{-.6in} % The first column within column 2 (column 2.1)
+
+%----------------------------------------------------------------------------------------
+%	MATERIALS
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Metrics}
+
+  \begin{itemize}
+  \item \texttt{Distance Normalized}: euclidean distance between traffic time series, normalized by standard deviation.
+
+  $$d_{norm}(i, j) = ||\frac{S_i(t)}{std(S_i)} - \frac{S_j(t)}{std(S_j)}||_2$$
+
+  \item \texttt{Distance Simplified}: distance between simplified time series, which contain 1s or 0s, depending on daily traffic being above the $90^{th}$ percentile.
+
+  $$d_{simp}(i, j) = ||1_{S_i(t) > q_{90\%}(S_i)} - 1_{S_j(t) > q_{90\%}(S_j)}||_2$$
+
+  \item \texttt{Distance Surge}: we subtracted the time series to its rolling mean (a "normal" regime). We chose to only keep the days where traffic is significantly above average, that is 3 times above standard deviation. This construction yields a series between 0 and 1, from which we compute paired euclidean distances.
+
+
+  $$d_{surge}(i, j) = ||S_{i, surge} - S_{j, surge}||_2$$
+
+
+\end{itemize}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.1
+
+\begin{column}{\onecolwid}\vspace{-.6in} % The second column within column 2 (column 2.2)
+
+%----------------------------------------------------------------------------------------
+%	METHODS
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Edge existence separation}
+
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.2
+
+\end{columns} % End of the split of column 2 - any content after this will now take up 2 columns width
+
+% %----------------------------------------------------------------------------------------
+% %	IMPORTANT RESULT
+% %----------------------------------------------------------------------------------------
+
+% \begin{alertblock}{Important Result}
+
+% Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit.
+
+% \end{alertblock}
+
+%----------------------------------------------------------------------------------------
+
+\begin{columns}[t,totalwidth=\twocolwid] % Split up the two columns wide column again
+
+\begin{column}{\onecolwid} % The first column within column 2 (column 2.1)
+
+%----------------------------------------------------------------------------------------
+%	MATHEMATICAL SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Learning edge existence}
+
+Our machine learning task is the following:
+
+$$y_{i, j} = 1_{\{edge(i, j)\}} \sim \big(d_{norm}(i, j), d_{simp}(i, j), d_{surge}(i, j)\big)$$
+
+One of the main challenges is facing class unbalance: indeed, the Wikipedia graph adjacency matrix is extremely sparse: 15,000 out of 15,000,000 of node pairs have an edge, that is 0.1\%.
+
+\begin{itemize}
+  \item Gaussian Naive Bayes classification
+  \item Random Forest classification
+\end{itemize}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.1
+
+\begin{column}{\onecolwid} % The second column within column 2 (column 2.2)
+
+%----------------------------------------------------------------------------------------
+%	RESULTS
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Learning results}
+
+  \begin{itemize}
+    \item Gaussian Naive Bayes classification
+    \begin{center}
+    \begin{tabular}{|l||c|c|}
+        \hline
+        Result  & Predicted+ & Predicted- \\
+        \hline
+        Edge & 7,447,798 & 8,642 \\
+        Non-edge & 33,201 & 579 \\
+        \hline
+    \end{tabular}
+    \end{center}
+
+      $F$-score: 2,76\%
+    \item Random Forest classification
+    \begin{center}
+    \begin{tabular}{|l||c|c|}
+        \hline
+        Result  & Predicted+ & Predicted- \\
+        \hline
+        Edge & 7,481,046 & 5,880 \\
+        Non-edge & 113 & 3,341 \\
+        \hline
+    \end{tabular}
+    \end{center}
+      $F$-score: 52,72\%
+  \end{itemize}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.2
+
+\end{columns} % End of the split of column 2
+
+\end{column} % End of the second column
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+\begin{column}{\onecolwid} % The third column
+
+%----------------------------------------------------------------------------------------
+%	CONCLUSION
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Missing pairs}
+  \begin{itemize}
+    \item "Santa Clause" - "The Twelve Days of Christmas (song)"
+    \item "Defenders (comics)" - "Iron Fist (comics)"
+    \item "Magneto (comics)" - "Jean Grey"
+    \item "Princess Margaret, Countess of Snowdon" - "Princess Alice of Battenberg"
+    \item "Venezuala" - "Cold War"
+    \item "South Africa" - "Australia"
+    \item "List of films based on Marvel comics" - "Avengers (comics)"
+  \end{itemize}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+%	ADDITIONAL INFORMATION
+%----------------------------------------------------------------------------------------
+
+% \begin{block}{Additional Information}
+
+% Maecenas ultricies feugiat velit non mattis. Fusce tempus arcu id ligula varius dictum.
+% \begin{itemize}
+% \item Curabitur pellentesque dignissim
+% \item Eu facilisis est tempus quis
+% \item Duis porta consequat lorem
+% \end{itemize}
+
+% \end{block}
+
+%----------------------------------------------------------------------------------------
+%	REFERENCES
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Conclusion}
+\begin{itemize}
+  \item We see that most of these pairs are relevant and indicate articles with a strongly related content. Even if links between those articles might not be explicitly needed, this pattern could be used as a recommendation engine for further reading.
+
+  \item We also realized that this method comes short when articles lack coordination in the surge structure. However, such a behavior is highly unlikely when considering longer time windows for the samples.
+
+  \item In order to leverage this initial analysis for actual industrial application, we can use thinner traffic analysis, with hourly data. These raw distance metrics come short for precise edge prediction, but they might be especially useful when combined with more classical features to evaluate the proximity between concepts and people.
+\end{itemize}
+
+
+\begin{center}
+    \includegraphics[scale=0.5]{Stanford_logo}
+\end{center}
+\end{block}
+
+%----------------------------------------------------------------------------------------
+%	ACKNOWLEDGEMENTS
+%----------------------------------------------------------------------------------------
+
+% \setbeamercolor{block title}{fg=red,bg=white} % Change the block title color
+
+% \begin{block}{Acknowledgements}
+
+% \small{\rmfamily{Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis. Aenean id neque dolor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.}} \\
+
+% \end{block}
+
+%----------------------------------------------------------------------------------------
+%	CONTACT INFORMATION
+%----------------------------------------------------------------------------------------
+
+% \setbeamercolor{block alerted title}{fg=black,bg=norange} % Change the alert block title colors
+% \setbeamercolor{block alerted body}{fg=black,bg=white} % Change the alert block body colors
+
+% \begin{alertblock}{Contact Information}
+
+% \begin{itemize}
+% \item Web: \href{http://www.university.edu/smithlab}{http://www.university.edu/smithlab}
+% \item Email: \href{mailto:john@smith.com}{john@smith.com}
+% \item Phone: +1 (000) 111 1111
+% \end{itemize}
+
+% \end{alertblock}
+
+% \begin{center}
+% \begin{tabular}{ccc}
+% \includegraphics[width=0.4\linewidth]{logo.png} & \hfill & \includegraphics[width=0.4\linewidth]{logo.png}
+% \end{tabular}
+% \end{center}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of the third column
+
+\end{columns} % End of all the columns in the poster
+
+\end{frame} % End of the enclosing frame
+
+\end{document}

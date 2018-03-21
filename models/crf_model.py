@@ -115,14 +115,11 @@ class CRFModel(object):
 
             random_train_examples_id = random.sample(range(len(train_examples)), k=len(dev_examples))
             logger.info("Evaluating on training data")
-            try:
-                train_entity_scoresByAlpha = self.evaluateCRF(sess,
-                                                              [train_examples[ind] for ind in random_train_examples_id],
-                                                              [train_examples_raw[ind] for ind in
-                                                               random_train_examples_id],
-                                                              evaluate=(epoch == self.model.config.n_epochs - 1))
-            except IndexError:
-                train_entity_scoresByAlpha = {alpha: (-1, -1, -1) for alpha in self.alphasCRF}
+            train_entity_scoresByAlpha = self.evaluateCRF(sess,
+                                                          [train_examples[ind] for ind in random_train_examples_id],
+                                                          [train_examples_raw[ind] for ind in
+                                                           random_train_examples_id],
+                                                          evaluate=(epoch == self.model.config.n_epochs - 1))
 
             for alpha in train_entity_scoresByAlpha:
                 train_entity_scores = train_entity_scoresByAlpha[alpha]
