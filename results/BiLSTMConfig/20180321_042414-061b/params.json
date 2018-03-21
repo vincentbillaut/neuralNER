@@ -1,0 +1,20 @@
+{
+ "vectors": "data/en-cw.txt",
+ "train_fraction": 0.9,
+ "adaptative_lr": false,
+ "batch_size": 128,
+ "ee": false,
+ "learning_rate": 0.005,
+ "dropout": 0.2,
+ "no_result": false,
+ "hidden_size": 100,
+ "tiny": false,
+ "other_layer_size": 20,
+ "crf": false,
+ "model": "bilstm",
+ "five_classes": true,
+ "n_epochs": 20,
+ "l2": null,
+ "data_train": "data/ner_dataset.csv",
+ "extra_layer": false
+}
