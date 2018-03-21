@@ -44,14 +44,10 @@ Stanford, CA 94305 \\
 
 \begin{abstract}
 
-Named Entity Recognition is a complex labelling task, and algorithm built to tackle it need to incorporate the whole sentence information to best understand a word's context, in order to yield an optimal predicting performance. In this report, we have explored various ways of taking into account a sentence's crucial past and forward dependencies to enhance the performance of standard deep learning algorithms. We have focused on the impact of memory in a network (using LSTMs), we have expanded it to incorporate forward information (through BiLSTMs), and we have explored a contribution from \cite{lample2016neural}, using a Conditional Random Field to directly consider the dependencies between predicted labels.
+Named Entity Recognition is a complex labeling task, and algorithm built to tackle it need to incorporate the whole sentence information to best understand a word's context, in order to yield an optimal predicting performance. In this report, we have explored various ways of taking into account a sentence's crucial past and forward dependencies to enhance the performance of standard deep learning algorithms. We have focused on the impact of memory in a network (using LSTMs), we have expanded it to incorporate forward information (through BiLSTMs), and we have explored a contribution from \cite{lample2016neural}, using a Conditional Random Field to directly consider the dependencies between predicted labels.
 \end{abstract}
 
 \section{Introduction}
-
-%\textit{VINCENT}
-
-%[This section introduces the problem, and your overall approach to the problem.]
 
 Named Entity Recognition (NER) is one of the main classes of problems tackled by Natural Language Processing. The goal is to identify named entities in sentences, and it can be most relevant for information retrieval or text classification in domains like healthcare.
 One of the main challenges with NER is the lack of labeled data, and
@@ -59,12 +55,9 @@ most approaches, before deep learning became commonplace in NLP, used to mostly 
 
 The more recent approaches to NER all tackle the problem in a \textit{deep} fashion, and perform significantly better than previous ones. Some try to use unsupervised learning as a way to augment existing features and provide more insight to the model, but the core of the task remains supervised.
 
-Our goal is to implement various techniques that we have come across in the literature, and to compare their performances against simple, well-tuned models (like simple bi-directional LSTMs) to try and assess whether fanciness is really necessary for NER. Additionally, we want to gain insight on the misclassifications of the various well-performing models that emerge, by conducting an error study and figuring out each approache's strengths and weaknesses.
+Our goal is to implement various techniques that we have come across in the literature, and to compare their performances against simple, well-tuned models (like simple bi-directional LSTMs) to try and assess whether fanciness is really necessary for NER.
 
 \section{Background/Related Work}
-%\textit{VINCENT}
-
-%[This section discusses relevant literature for your project.]
 
 \cite{lample2016neural} was the first source of motivation for our work. The relatively recent idea of bringing together a classical Markovian tool --- namely conditional random fields (CRF) --- that had shown promising results on its own (see \cite{mccallum2003early}) and the modern deep learning approach, as has been tried on sequence tagging in \cite{huang2015bidirectional}, particularly appealed to us. As a matter of fact, one of our main concerns with this hybrid approach is that is doesn't seem like a very natural way to tackle the problem, and so one question guiding our experimentation process was whether it would be possible to reach similar performances without it, but instead by fine-tuning a neural model.
 
@@ -138,7 +131,7 @@ P[i, j] = Pr(y_{t+1} = y_j | y_{t} =y_i) \textit{ in training set}
 
 , where $P$ is a stochastic matrix of size $(k.k)$, where $k$ is the number of considered classes. However, we tried to use the information of the CRF in a different way than in this paper. Instead of using the transition matrix $P$ at each learning step, we use it only for prediction. This approach allows the CRF to be incorporated as an extraneous source of information on top of any trained predictor.
 
-Consequently, we chose to use this information to help us in predicting labels, from the outputs $\hat{y}_t$ of the Recurrent Network, using an iterative method. We begin by labelling the first word by taking the optimal prediction outputed by the network. For further words, we select the maximum of a weighted combination of the network's output, and the probability of transitioning from the previously labeled word to the other considered labels:
+Consequently, we chose to use this information to help us in predicting labels, from the outputs $\hat{y}_t$ of the Recurrent Network, using an iterative method. We begin by labeling the first word by taking the optimal prediction outputed by the network. For further words, we select the maximum of a weighted combination of the network's output, and the probability of transitioning from the previously labeled word to the other considered labels:
 
 \begin{align*}
 z_0 &= argmax_j(\hat{y}_0[j])
@@ -157,10 +150,9 @@ choice of method is meant to partially reproduce the method developed in \cite{l
 
 \subsection{The data}
 
-TODO
+The CoNLL-2002 (\cite{tjong2002introduction}) and CoNLL-2003 (\cite{tjong2003introduction}) shared tasks provide frameworks and benchmarks for language-independent NER, as well as comprehensive labeled datasets. It has become the standard dataset for benchmarking NER performances since, and we have relied on it (specifically, CoNLL-2002) for our training and evaluation. It consists in about one million labeled words, across around 50,000 sentences.
 
 \subsection{Tuning the network architecture}
-\textit{VINCENT}
 
 Our main study consists in exploring the different architectures and parameters, and determining which perform best for our task. First we comapred the main architecture schemes: a simple feed-forward neural network, an LSTM, and a bi-directional LSTM, each time finding near-optimal settings for hidden layer sizes and learning rates. Then, restraining ourselves on the best performing one, we tried tuning two other parameters: the L2 regularization parameter and the dropout rate.
 
@@ -173,24 +165,32 @@ First of all, we wanted to have a good-enough baseline, upon which to build and 
 \item LSTM with two layers on top,
 \item bi-LSTM with prediction layer on top,
 \item bi-LSTM with two layers on top,
-\item stacked LSTMs.
+\item stacked LSTMs,
 \end{itemize}
 
-[TODO ADD GRAPH COMPARING DIFFERENT ARCHITECTURES]
-
-\subsubsection{Dropout rate}
-
-The other learning parameter we looked at in details is the dropout rate. It gives the portion of the neurons of a layer we want arbitrarily desactivated at each pass over the network, and it's designed to give the network more robustness (because the neurons "learn" to not depend too much on each other). We find that the best performances are achieved with a dropout rate around 20\%, as shown in Fig \ref{dr_graph} and \ref{dr_devf1}.
+and present the aggregated results in Fig \ref{config_compar}. We chose to continue the study with a \textbf{bi-LSTM}, because we found it to be the simplest model among the best performing ones.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=380px]{figs/dr_devf1.png}
+\includegraphics[width=330px]{figs/config_compar.png}
+\caption{Comparing many different architectures and learning parameters led us to choose a \textbf{bi-LSTM} for the rest of our study. Some models with additional layers may have been able to perform as well with finer tuning, but we considered that the simpler would bring the most robustness}
+\label{config_compar}
+\end{center}
+\end{figure}
+
+\subsubsection{Dropout rate}
+
+The first learning parameter we looked at in details is the dropout rate. It gives the portion of a layer's neurons we want arbitrarily desactivated at each pass over the network, and it's designed to give the network more robustness (because the neurons "learn" to not depend too much on each other). We find that the best performances, with everything else fixed, are achieved with a dropout rate around 20\%, as shown in Fig \ref{dr_devf1} --- comparing learning curves --- and Fig \ref{dr_graph} --- comparing best performances.
+
+\begin{figure}[h!!]
+\begin{center}
+\includegraphics[width=350px]{figs/dr_devf1.png}
 \caption{Learning curves for different dropout rates (dev set F1 score as a function of the number of epochs) ; we see that the most optimal dropout rate for learning is around 20\%}
 \label{dr_devf1}
 \end{center}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
 \includegraphics[width=250px]{figs/dr_graph.png}
 \caption{Best performance of the model, as a function of the keep rate (1 - dropout rate)}
@@ -200,39 +200,30 @@ The other learning parameter we looked at in details is the dropout rate. It giv
 
 \subsubsection{L2 regularization}
 
-Once satisfied with a "baseline" model, we tried tuning L2 regularization, keeping everything else fixed.
+Once satisfied with our bi-LSTM model with 20\% dropout, we tried tuning L2 regularization, keeping everything else fixed.
 
 L2 regularization can be written as follows: $$regularized~loss = loss + \beta~(||W_1||_2+||W_2||_2+...)$$ where the $W_j$ are the weights matrices involved in the model, and $\beta$ is the regularization hyper-parameter, which determines how strong we want to penalize large weights.
 
-We tried a rather wide grid of values for $\beta$, and could compare each one's performance, both looking at the learning curves (Fig \ref{l2_devf1}) and at the best performance (Fig \ref{l2_graph}). Surprinsingly, the unregularized baseline is almost unbeatable. Still, we consider that sane to introduce some weight penalization, and therefore keep $\beta=3~10^{-5}$.
+We tried a rather wide grid of values for $\beta$, and could compare each one's performance, both looking at the learning curves (Fig \ref{l2_devf1}) and at the best performance (Fig \ref{l2_graph}). Surprinsingly, the unregularized baseline is almost unbeatable. Still, we consider it sane to introduce some weight penalization, and therefore keep $\beta=3~10^{-5}$.
 
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
-\includegraphics[width=380px]{figs/l2_devf1.png}
+\includegraphics[width=350px]{figs/l2_devf1.png}
 \caption{Learning curves for different $\beta$ values (dev set F1 score as a function of the number of epochs) ; we see that surprinsingly, few regularized models reach the out-of-sample performance of the unregularized baseline}
 \label{l2_devf1}
 \end{center}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
 \includegraphics[width=250px]{figs/l2_graph.png}
-\caption{Best performance of the model, as a function of the regularization parameter}
+\caption{Best performance of the model, as a function of the regularization parameter ; we select the most penalized model among the best performing ones.}
 \label{l2_graph}
 \end{center}
 \end{figure}
 
 \subsection{Incorporating the CRF}
-\textit{MARC}
-
-[In this section, you describe:
-\begin{itemize}
-\item The dataset(s) you used
-\item How you ran your experiments (e.g. model configurations, learning rate, training time, etc.)
-\item The evaluation metric(s) you used
-\item Your results. It's very important to show both \textit{quantitative evaluation} (show numbers, figures, tables etc. relating to your evaluation metric(s)) and \textit{qualitative evaluation} (show example results, etc.).
-\end{itemize}]
 
 We have tried to incorporate the prediction of a pre-trained CRF on top of two models: a simple LSTM model with $50$ recurrent cells, as well as our best-performing model, a Bidirectional LSTM. We have tried several values of the $\alpha$ parameter on an exponential scale, to see which one yields the best predicting performance. The $\alpha$ value which performs best on the train set is the one we will choose for evaluating our dev set.
 
@@ -240,7 +231,7 @@ We have summarized the results of varying the CRF's $\alpha$ parameter on a simp
 
 It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the Recurrent Network before being able to contribute in a constructive way.
 
-\begin{figure}
+\begin{figure}[h!]
 \begin{center}
 \includegraphics[width=250px]{figs/LSTM-CRF-vs-alpha.png}
 \caption{Train and Dev set performance of a LSTM model, incorporating a CRF on the prediction step, versus the importance $\alpha$ given to the CRF. No positive level of importance yields superior performance. The best decision is not to use the extra information from the CRF. }
@@ -249,7 +240,6 @@ It appears that the way we included the CRF in our model is not relevant for pre
 \end{figure}
 
 \section{Conclusion}
-\textit{MARC}
 
 We have produced the following table to summarize our main results for each attempted technique.
 
@@ -268,13 +258,18 @@ We have produced the following table to summarize our main results for each atte
  \hline
  LSTM + extra layer + CRF & $0.751$ \\
  \hline
- Bi-LSTM & $0.796$ \\ [1ex]
+ Bi-LSTM & $0.796$ \\ %[1ex]
  \hline
 \end{tabular}
 \end{center}
 
+TODO
+
 Opening :
+
 - to enhance CRF, bidirectional CRF? Incorporating CRF on training?
+
+- mention attention ?
 
 
 \newpage
