@@ -110,7 +110,7 @@
 \begin{block}{Motivation}
     \begin{itemize}
       \item NER with many classes is a complex task
-      \item NER requires a thin understanding of context information
+      \item NER requires a fine understanding of context information
       \item We need to incorporate past and future dependencies
       \item A CRF implements a memory flow on labels
     \end{itemize}
@@ -120,7 +120,7 @@
 %------------------------------------------------
 \begin{block}{Dataset: CoNLL-2002}
 
-Labelled new articles:
+Labeled new articles:
 
 \vspace{5mm}
 
@@ -165,11 +165,12 @@ English \=seaside \=resort \=of \=Brighton. `` \\
 \begin{itemize}
   \item Words embedded with GloVe
 
-  \item LSTM
-
-  \item Bidirectional LSTM
-
-  \item With(out) extra layer
+  \item Model
+\begin{itemize}
+\item LSTM w/ or w/o extra top layer(s)
+\item Bi-LSTM w/ or w/o extra top layer
+\item Stacked LSTMs
+\end{itemize}
 
   \item Cross-Entropy loss on labels
 
@@ -195,9 +196,31 @@ English \=seaside \=resort \=of \=Brighton. `` \\
 %	MATERIALS
 %----------------------------------------------------------------------------------------
 
+\begin{block}{Comparing different architectures}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=600px]{figs/config_compar.png}
+\caption{We have tried many different configurations for various types of architectures, and quickly concluded that the best performing architecture for our problem's specificity and scale was going to be a \textbf{Bi-directional LSTM} ; amongst them we chose the simplest one to give top results, namely one with a size-50 hidden layer}
+\label{config_compar}
+\end{center}
+\end{figure}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+
+\end{column} % End of column 2.1
+
+\begin{column}{\onecolwid}\vspace{-.6in} % The second column within column 2 (column 2.2)
+
+%----------------------------------------------------------------------------------------
+%	METHODS
+%----------------------------------------------------------------------------------------
+
 \begin{block}{Conditional Random Field}
 
-  \begin{itemize}
+\begin{itemize}
   \item Encodes a Markov Chain: probability of transitioning from a label to another:
 
   \vspace{5mm}
@@ -234,28 +257,6 @@ English \=seaside \=resort \=of \=Brighton. `` \\
 
 %----------------------------------------------------------------------------------------
 
-\end{column} % End of column 2.1
-
-\begin{column}{\onecolwid}\vspace{-.6in} % The second column within column 2 (column 2.2)
-
-%----------------------------------------------------------------------------------------
-%	METHODS
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Dropout rate selection}
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=600px]{figs/dr_graph.png}
-\caption{We see that the dropout rate has a significant effect on the model's performance, and we therefore kept a value of \textbf{0.2} moving forward. }
-\label{dr_graph}
-\end{center}
-\end{figure}
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-
 \end{column} % End of column 2.2
 
 \end{columns} % End of the split of column 2 - any content after this will now take up 2 columns width
@@ -280,16 +281,15 @@ English \=seaside \=resort \=of \=Brighton. `` \\
 %	MATHEMATICAL SECTION
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Testing our models on five label dataset}
+\begin{block}{Dropout rate selection}
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=600px]{figs/dr_devf1.png}
-\caption{The scores reported in the papers we looked at are obtained by working on the same data as us, but with fewer labels (5 instead of 17). Although we chose to stick to the 17 labels version for our whole analysis, because we consider it to be more interesting (because more complex), we however tried to reach state-of-the-art performance on the "reduced" labels. }
-\label{dr_devf1}
+\includegraphics[width=600px]{figs/dr_graph.png}
+\caption{We see that the dropout rate has a significant effect on the model's performance, and we therefore kept a value of \textbf{0.2} moving forward. }
+\label{dr_graph}
 \end{center}
 \end{figure}
-
 
 \end{block}
 
@@ -364,10 +364,14 @@ English \=seaside \=resort \=of \=Brighton. `` \\
 
 \begin{block}{Results summary}
 
+In the simple way we incorporated CRF in the neural architecture, we could not get it to help a model perform significantly better than our well-tuned bi-LSTM.
+
+\vspace{10px}
+
 \begin{center}
    \begin{tabular}{||c | c||}
    \hline
-   Model  & Dev $F_1$ \\
+   \textbf{Model}  & \textbf{Dev $F_1$} \\
    \hline\hline
    Naive word-by-word & $0.691$ \\
    \hline
