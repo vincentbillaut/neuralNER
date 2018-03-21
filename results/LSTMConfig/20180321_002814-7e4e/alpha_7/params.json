@@ -1,0 +1,22 @@
+{
+ "alpha": 0.42813323987193935,
+ "adaptative_lr": false,
+ "n_epochs": 15,
+ "data_train": "data/ner_dataset.csv",
+ "crf": true,
+ "batch_size": 128,
+ "vectors": "data/en-cw.txt",
+ "hidden_size": 50,
+ "ee": false,
+ "dropout": 0,
+ "learning_rate": 0.005,
+ "other_layer_size": 20,
+ "extra_layer": true,
+ "l2": null,
+ "no_result": false,
+ "alpha_i": 7,
+ "train_fraction": 0.9,
+ "model": "lstm",
+ "tiny": false,
+ "five_classes": false
+}
