@@ -25,7 +25,6 @@
 \documentclass[final]{beamer}
 
 \usepackage[scale=0.8]{beamerposter} % Use the beamerposter package for laying out the poster
-\usepackage{cgloss4e}
 
 \usetheme{confposter} % Use the confposter theme supplied with this template
 
@@ -243,8 +242,12 @@ B-gpe \>0 \>0 \>0 \>B-geo
 %	METHODS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Edge existence separation}
+\begin{block}{Dropout rate selection}
+\begin{center}
+  \includegraphics[scale=0.5]{figs/dr_graph.png}
+\end{center}
 
+We see that the dropout rate has a significant effect on the model's performance, and we therefore kept a value of \textbf{0.2} moving forward.
 
 \end{block}
 
@@ -258,11 +261,11 @@ B-gpe \>0 \>0 \>0 \>B-geo
 % %	IMPORTANT RESULT
 % %----------------------------------------------------------------------------------------
 
-% \begin{alertblock}{Important Result}
-
-% Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit.
-
-% \end{alertblock}
+%\begin{alertblock}{Important Result}
+%
+%Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit.
+%
+%\end{alertblock}
 
 %----------------------------------------------------------------------------------------
 
@@ -274,18 +277,13 @@ B-gpe \>0 \>0 \>0 \>B-geo
 %	MATHEMATICAL SECTION
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Learning edge existence}
+\begin{block}{Testing our models on five label dataset}
 
-Our machine learning task is the following:
+The scores reported in the papers we looked at are obtained by working on the same data as us, but with fewer labels (5 instead of 17). Although we chose to stick to the 17 labels version for our whole analysis, because we consider it to be more interesting (because more complex), we however tried to reach state-of-the-art performance on the "reduced" labels.
 
-$$y_{i, j} = 1_{\{edge(i, j)\}} \sim \big(d_{norm}(i, j), d_{simp}(i, j), d_{surge}(i, j)\big)$$
-
-One of the main challenges is facing class unbalance: indeed, the Wikipedia graph adjacency matrix is extremely sparse: 15,000 out of 15,000,000 of node pairs have an edge, that is 0.1\%.
-
-\begin{itemize}
-  \item Gaussian Naive Bayes classification
-  \item Random Forest classification
-\end{itemize}
+\begin{center}
+\includegraphics[scale=0.6]{figs/dr_devf1.png}
+\end{center}
 
 \end{block}
 
@@ -299,35 +297,13 @@ One of the main challenges is facing class unbalance: indeed, the Wikipedia grap
 %	RESULTS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Learning results}
+\begin{block}{L2 regularization study}
 
-  \begin{itemize}
-    \item Gaussian Naive Bayes classification
-    \begin{center}
-    \begin{tabular}{|l||c|c|}
-        \hline
-        Result  & Predicted+ & Predicted- \\
-        \hline
-        Edge & 7,447,798 & 8,642 \\
-        Non-edge & 33,201 & 579 \\
-        \hline
-    \end{tabular}
-    \end{center}
+\begin{center}
+\includegraphics[scale=0.5]{figs/placeholder.png}
+\end{center}
 
-      $F$-score: 2,76\%
-    \item Random Forest classification
-    \begin{center}
-    \begin{tabular}{|l||c|c|}
-        \hline
-        Result  & Predicted+ & Predicted- \\
-        \hline
-        Edge & 7,481,046 & 5,880 \\
-        Non-edge & 113 & 3,341 \\
-        \hline
-    \end{tabular}
-    \end{center}
-      $F$-score: 52,72\%
-  \end{itemize}
+Surprisingly, no regularized model beats the baseline in terms of F1 score on the dev set. Although this seemed suspicious, we still chose to discard regularization in what followed.
 
 \end{block}
 
