@@ -25,6 +25,7 @@
 \documentclass[final]{beamer}
 
 \usepackage[scale=0.8]{beamerposter} % Use the beamerposter package for laying out the poster
+\usepackage{cgloss4e}
 
 \usetheme{confposter} % Use the confposter theme supplied with this template
 
@@ -122,17 +123,22 @@
 
 Labelled new articles:
 
-`` The protest comes on the eve of the annual conference
+\begin{tabbing}
+``\=The \=protest \=comes \=on \=the \=eve \=of \=the \=annual \=conference \\
+\>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0
+\end{tabbing}
 
-0 0 0 0 0 0 0 0 0 0
+\begin{tabbing}
+of \=Britain\='s \=ruling \=Labor \=Party \=in \=the \=southern \\
 
-of Britain's ruling Labor Party in the southern
+0 \>B-geo \>0 \>0 \>B-org \>I-org \>0 \>0 \>0
+\end{tabbing}
 
-0 B-geo 0 0 B-org I-org 0 0 0
+\begin{tabbing}
+English \=seaside \=resort \=of \=Brighton. `` \\
 
-English seaside resort of Brighton. ``
-
-B-gpe 0 0 0 B-geo
+B-gpe \>0 \>0 \>0 \>B-geo
+\end{tabbing}
 \end{block}
 
 %------------------------------------------------
@@ -143,10 +149,6 @@ For each of the studied articles, we considered daily recordings of traffic data
 \vspace{5mm}
 
 Each of these 6400 time series has a structure made of calm periods and surge moments. We see that several kinds of articles lie on way different levels of magnitude. We will have to take these issues into consideration when comparing them.
-
-\begin{center}
-  \includegraphics[scale=0.6]{time_series}
-\end{center}
 
 \end{block}
 
@@ -181,9 +183,7 @@ Each of these 6400 time series has a structure made of calm periods and surge mo
 
   $$d_{surge}(i, j) = ||S_{i, surge} - S_{j, surge}||_2$$
 
-  \begin{center}
-    \includegraphics[scale=0.6]{surge_example}
-  \end{center}
+
 \end{itemize}
 
 \end{block}
@@ -199,15 +199,6 @@ Each of these 6400 time series has a structure made of calm periods and surge mo
 %----------------------------------------------------------------------------------------
 
 \begin{block}{Edge existence separation}
-\begin{center}
-  \includegraphics[scale=0.5]{normalized_distrib}
-\end{center}
-\begin{center}
-  \includegraphics[scale=0.5]{simplified_distrib}
-\end{center}
-\begin{center}
-  \includegraphics[scale=0.5]{surges_distrib}
-\end{center}
 
 
 \end{block}
