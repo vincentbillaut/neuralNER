@@ -234,7 +234,7 @@ We have tried to incorporate the prediction of a pre-trained CRF on top of two m
 
 We have summarized the results of varying the CRF's $\alpha$ parameter on a simple LSTM model in Fig \ref{lstm-crf-results}. First, we see that the dev $F_1$ performance curve closely follows the  train $F_1$ curve. This means that tuning the $\alpha$ parameter does not lead to an overfitting on specific subsets of the studied set. However, we obtain disappointing results on the contribution of the information of the CRF. The best results are obtained by not considering the CRF. Using more information from the CRF yields a steady decrease in $F_1$ performance.
 
-It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the Recurrent Network before being able to contribute in a constructive way. 
+It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the Recurrent Network before being able to contribute in a constructive way.
 
 \begin{figure}
 \begin{center}
@@ -262,7 +262,7 @@ We have produced the following table to summarize our main results for each atte
  \hline
  LSTM + extra layer & $0.770$ \\
  \hline
- LSTM + extra layer + CRF & $0.770$ \\
+ LSTM + extra layer + CRF & $0.751$ \\
  \hline
  Bi-LSTM & $0.796$ \\ [1ex]
  \hline
