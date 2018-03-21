@@ -228,7 +228,7 @@ We tried a rather wide grid of values for $\beta$, and could compare each one's 
 \item Your results. It's very important to show both \textit{quantitative evaluation} (show numbers, figures, tables etc. relating to your evaluation metric(s)) and \textit{qualitative evaluation} (show example results, etc.).
 \end{itemize}]
 
-We have tried to incorporate the prediction of a pre-trained CRF on top of two models: a simple LSTM model with $50$ recurrent cells, as well as our best-performing model, a Bi-LSTM 
+We have tried to incorporate the prediction of a pre-trained CRF on top of two models: a simple LSTM model with $50$ recurrent cells, as well as our best-performing model, a Bidirectional LSTM. 
 
 \section{Conclusion}
 \textit{MARC}
@@ -240,9 +240,11 @@ We have produced the following table to summarize our main results for each atte
  \hline
  Model  & Dev $F_1$ \\
  \hline\hline
- Naive word-by-word & 6 \\
+ Naive word-by-word & $0.691$ \\
  \hline
- LSTM & 6344 \\ [1ex]
+ LSTM & $0.770$
+ \hline
+ Bi-LSTM & $0.796$ \\ [1ex]
  \hline
 \end{tabular}
 \end{center}
