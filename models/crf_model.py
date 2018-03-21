@@ -122,7 +122,7 @@ class CRFModel(object):
                                                                random_train_examples_id],
                                                               evaluate=(epoch == self.model.config.n_epochs - 1))
             except IndexError:
-                train_entity_scores = {alpha: (-1, -1, -1) for alpha in self.alphasCRF}
+                train_entity_scoresByAlpha = {alpha: (-1, -1, -1) for alpha in self.alphasCRF}
 
             for alpha in train_entity_scoresByAlpha:
                 train_entity_scores = train_entity_scoresByAlpha[alpha]
