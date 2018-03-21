@@ -1,5 +1,6 @@
 \documentclass{article} % For LaTeX2e
 \usepackage{nips13submit_e,times}
+\usepackage[pdftex]{graphicx}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{amsmath}
@@ -48,14 +49,28 @@ Stanford, CA 94305 \\
 \end{abstract}
 
 \section{Introduction}
-\textit{VINCENT}
 
-[This section introduces the problem, and your overall approach to the problem.]
+%\textit{VINCENT}
+
+%[This section introduces the problem, and your overall approach to the problem.]
+
+Named Entity Recognition (NER) is one of the main classes of problems tackled by Natural Language Processing. The goal is to identify named entities in sentences, and it can be most relevant for information retrieval or text classification in domains like healthcare. 
+One of the main challenges with NER is the lack of labeled data, and 
+most approaches, before deep learning became commonplace in NLP, used to mostly rely on hand-made rules and features to perform well, but therefore lacked a great deal of robustness and generalizability, in particular when trying to learn or be applied across languages (and a language-agnostic model is one of the key objectives in NER today).
+
+The more recent approaches to NER all tackle the problem in a \textit{deep} fashion, and perform significantly better than previous ones. Some try to use unsupervised learning as a way to augment existing features and provide more insight to the model, but the core of the task remains supervised.
+
+Our goal is to implement various techniques that we have come across in the literature, and to compare their performances against simple, well-tuned models (like simple bi-directional LSTMs) to try and assess whether fanciness is really necessary for NER. Additionally, we want to gain insight on the misclassifications of the various well-performing models that emerge, by conducting an error study and figuring out each approache's strengths and weaknesses.
 
 \section{Background/Related Work}
-\textit{VINCENT}
+%\textit{VINCENT}
 
-[This section discusses relevant literature for your project.]
+%[This section discusses relevant literature for your project.]
+
+\cite{lample2016neural} was the first source of motivation for our work. The relatively recent idea of bringing together a classical Markovian tool --- namely conditional random fields (CRF) --- that had shown promising results on its own (see \cite{mccallum2003early}) and the modern deep learning approach, as has been tried on sequence tagging in \cite{huang2015bidirectional}, particularly appealed to us. As a matter of fact, one of our main concerns with this hybrid approach is that is doesn't seem like a very natural way to tackle the problem, and so one question guiding our experimentation process was whether it would be possible to reach similar performances without it, but instead by fine-tuning a neural model.
+
+
+
 
 \section{Approach}
 
@@ -64,7 +79,7 @@ Stanford, CA 94305 \\
 Our task is classification of each word within a sentence into one of
 the NER categories. Our model consists of an embedding layer, projecting
 each word of the vocabulary into a $50$-dimensional space. The word
-embedding is initialized with GloVe [1] (TODO) vectors, and is further trained for this specific
+embedding is initialized with GloVe (\cite{pennington2014glove}) vectors, and is further trained for this specific
 task.
 
 We then use a Recurrent Neural Network (RNN) on these embedded words, to
@@ -73,7 +88,7 @@ past-dependent task. On the outputs of each RNN cell, we apply an extra
 non-linearly activated layer, to transform the outputs of the Recurrent
 Network into vectors of the same shape as the number of predicted
 classes. We finally apply a softmax transformation, and use
-Crosse-Entropy as a loss.
+Cross-Entropy loss.
 
 We also used enhancements of this base model:
 
@@ -135,15 +150,72 @@ z_t &= argmax_j(\hat{y}_t[j] + \alpha.P[z_{t-1},  j]) \ \ \forall t \in [1, T]
 
 
 Where $\alpha$ is a hyper-parameter which has to be chosen. This
-choice of method is meant to partially reproduce the method developed in
-{[}2{]} (TODO), by reducing the search beam to a greedy iterative
-algorithm.
+choice of method is meant to partially reproduce the method developed in \cite{lample2016neural}, by reducing the search beam to a greedy iterative algorithm.
 
 
 \section{Experiments}
 
 \subsection{Tuning the network architecture}
 \textit{VINCENT}
+
+Our main study consists in exploring the different architectures and parameters, and determining which perform best for our task. First we comapred the main architecture schemes: a simple feed-forward neural network, an LSTM, and a bi-directional LSTM, each time finding near-optimal settings for hidden layer sizes and learning rates. Then, restraining ourselves on the best performing one, we tried tuning two other parameters: the L2 regularization parameter and the dropout rate.
+
+\subsubsection{Network architecture}
+
+First of all, we wanted to have a good-enough baseline, upon which to build and experiment later on. We tried the following architectures:
+\begin{itemize}
+\item simple feed-forward neural network,
+\item LSTM with prediction layer on top,
+\item LSTM with two layers on top,
+\item bi-LSTM with prediction layer on top,
+\item bi-LSTM with two layers on top,
+\item stacked LSTMs.
+\end{itemize}
+
+
+
+\subsubsection{L2 regularization}
+
+Once satisfied with a "baseline" model, we tried tuning L2 regularization, keeping everything else fixed.
+
+L2 regularization can be written as follows: $$regularized_loss = loss + \beta (||W_1||_2+||W_2||_2+...)$$ where the $W_j$ are the parameter matrices involved in the model, and $\beta$ is the regularization parameter, which determines how strong we want to penalize large parameters.
+
+We tried a rather wide grid of values for $\beta$, and could compare each one's performance, both looking at the learning curves (Fig \ref{l2_devf1}) and at the best performance (Fig \ref{l2_graph}).
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=380px]{figs/l2_devf1.png}
+\caption{Learning curves for different $\beta$ values (dev set F1 score as a function of the number of epochs) ; we see that surprinsingly, no regularized model reaches the out-of-sample performance of the unregularized baseline}
+\label{l2_devf1}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=250px]{figs/l2_graph.png}
+\caption{Best performance of the model, as a function of the regularization parameter}
+\label{l2_graph}
+\end{center}
+\end{figure}
+
+\subsubsection{Dropout rate}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=380px]{figs/dr_devf1.png}
+\caption{Learning curves for different dropout rates (dev set F1 score as a function of the number of epochs) ; we see that the most optimal dropout rate for learning is around 20\%}
+\label{dr_devf1}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=250px]{figs/dr_graph.png}
+\caption{Best performance of the model, as a function of the keep rate = 1 - dropout rate}
+\label{dr_graph}
+\end{center}
+\end{figure}
 
 \subsection{Incorporating the CRF}
 \textit{MARC}
@@ -161,10 +233,24 @@ algorithm.
 
 [What have you learned? Suggest future ideas.]
 
-\section{References}
-\textit{VINCENT}
+\bibliography{references}
+\bibliographystyle{plain}
 
-[Include references to all literature that informed your project work. This is absolutely necessary.]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %%\section{Submission of papers to NIPS 2013}
 %%
