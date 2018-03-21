@@ -243,11 +243,14 @@ English \=seaside \=resort \=of \=Brighton. `` \\
 %----------------------------------------------------------------------------------------
 
 \begin{block}{Dropout rate selection}
-\begin{center}
-  \includegraphics[scale=0.5]{figs/dr_graph.png}
-\end{center}
 
-We see that the dropout rate has a significant effect on the model's performance, and we therefore kept a value of \textbf{0.2} moving forward.
+\begin{figure}
+\begin{center}
+\includegraphics[width=600px]{figs/dr_graph.png}
+\caption{We see that the dropout rate has a significant effect on the model's performance, and we therefore kept a value of \textbf{0.2} moving forward. }
+\label{dr_graph}
+\end{center}
+\end{figure}
 
 \end{block}
 
@@ -279,11 +282,14 @@ We see that the dropout rate has a significant effect on the model's performance
 
 \begin{block}{Testing our models on five label dataset}
 
-The scores reported in the papers we looked at are obtained by working on the same data as us, but with fewer labels (5 instead of 17). Although we chose to stick to the 17 labels version for our whole analysis, because we consider it to be more interesting (because more complex), we however tried to reach state-of-the-art performance on the "reduced" labels.
-
+\begin{figure}
 \begin{center}
-\includegraphics[scale=0.6]{figs/dr_devf1.png}
+\includegraphics[width=600px]{figs/dr_devf1.png}
+\caption{The scores reported in the papers we looked at are obtained by working on the same data as us, but with fewer labels (5 instead of 17). Although we chose to stick to the 17 labels version for our whole analysis, because we consider it to be more interesting (because more complex), we however tried to reach state-of-the-art performance on the "reduced" labels. }
+\label{dr_devf1}
 \end{center}
+\end{figure}
+
 
 \end{block}
 
@@ -299,11 +305,13 @@ The scores reported in the papers we looked at are obtained by working on the sa
 
 \begin{block}{L2 regularization study}
 
+\begin{figure}
 \begin{center}
-\includegraphics[scale=0.5]{figs/l2_graph.png}
+\includegraphics[width=600px]{figs/l2_graph.png}
+\caption{Surprisingly, no regularized model significantly beats the baseline in terms of F1 score on the dev set. Still, we consider that introducing some regularization is safer for robustness, and therefore keep an L2 regularization parameter $\beta=3~10^{-5}$. }
+\label{l2}
 \end{center}
-
-Surprisingly, no regularized model significantly beats the baseline in terms of F1 score on the dev set. Still, we consider that introducing some regularization is safer for robustness, and therefore keep an L2 regularization parameter $\beta=3~10^{-5}$.
+\end{figure}
 
 \end{block}
 
