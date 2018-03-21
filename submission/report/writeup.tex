@@ -178,12 +178,12 @@ First of all, we wanted to have a good-enough baseline, upon which to build and 
 
 Once satisfied with a "baseline" model, we tried tuning L2 regularization, keeping everything else fixed.
 
-L2 regularization can be written as follows: $$regularized_loss = loss + \beta (||W_1||_2+||W_2||_2+...)$$ where the $W_j$ are the parameter matrices involved in the model, and $\beta$ is the regularization parameter, which determines how strong we want to penalize large parameters.
+L2 regularization can be written as follows: $$regularized~loss = loss + \beta~(||W_1||_2+||W_2||_2+...)$$ where the $W_j$ are the weights matrices involved in the model, and $\beta$ is the regularization hyper-parameter, which determines how strong we want to penalize large weights.
 
 We tried a rather wide grid of values for $\beta$, and could compare each one's performance, both looking at the learning curves (Fig \ref{l2_devf1}) and at the best performance (Fig \ref{l2_graph}).
 
 
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 \includegraphics[width=380px]{figs/l2_devf1.png}
 \caption{Learning curves for different $\beta$ values (dev set F1 score as a function of the number of epochs) ; we see that surprinsingly, no regularized model reaches the out-of-sample performance of the unregularized baseline}
@@ -191,7 +191,7 @@ We tried a rather wide grid of values for $\beta$, and could compare each one's 
 \end{center}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 \includegraphics[width=250px]{figs/l2_graph.png}
 \caption{Best performance of the model, as a function of the regularization parameter}
@@ -203,7 +203,7 @@ We tried a rather wide grid of values for $\beta$, and could compare each one's 
 
 The other learning parameter we looked at in details is the dropout rate. It gives the portion of the neurons of a layer we want arbitrarily desactivated at each pass over the network, and it's designed to give the network more robustness (because the neurons "learn" to not depend too much on each other). We find that the best performances are achieved with a dropout rate around 20\%, as shown in Fig \ref{dr_graph} and \ref{dr_devf1}.
 
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 \includegraphics[width=380px]{figs/dr_devf1.png}
 \caption{Learning curves for different dropout rates (dev set F1 score as a function of the number of epochs) ; we see that the most optimal dropout rate for learning is around 20\%}
@@ -211,7 +211,7 @@ The other learning parameter we looked at in details is the dropout rate. It giv
 \end{center}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
 \includegraphics[width=250px]{figs/dr_graph.png}
 \caption{Best performance of the model, as a function of the keep rate (1 - dropout rate)}
@@ -234,7 +234,7 @@ We have tried to incorporate the prediction of a pre-trained CRF on top of two m
 
 We have summarized the results of varying the CRF's $\alpha$ parameter on a simple LSTM model in Fig \ref{lstm-crf-results}. First, we see that the dev $F_1$ performance curve closely follows the  train $F_1$ curve. This means that tuning the $\alpha$ parameter does not lead to an overfitting on specific subsets of the studied set. However, we obtain disappointing results on the contribution of the information of the CRF. The best results are obtained by not considering the CRF. Using more information from the CRF yields a steady decrease in $F_1$ performance.
 
-It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the Recurrent Network before being able to contribute in a constructive way. 
+It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the Recurrent Network before being able to contribute in a constructive way.
 
 \begin{figure}
 \begin{center}
@@ -262,7 +262,7 @@ We have produced the following table to summarize our main results for each atte
  \hline
  LSTM + extra layer & $0.770$ \\
  \hline
- LSTM + extra layer + CRF & $0.770$ \\
+ LSTM + extra layer + CRF & $0.751$ \\
  \hline
  Bi-LSTM & $0.796$ \\ [1ex]
  \hline
