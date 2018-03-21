@@ -45,6 +45,8 @@ Stanford, CA 94305 \\
 \begin{abstract}
 
 Named Entity Recognition is a complex labeling task, and algorithms built to tackle it need to incorporate the whole sentence information to best understand a word's context, in order to reach an optimal predicting performance. In this report, we have explored various ways of taking into account a sentence's crucial past and forward dependencies to enhance the performance of standard deep learning algorithms. We have focused on the impact of memory in a network (using LSTMs), we have expanded it to incorporate forward information (through BiLSTMs), and we have explored a contribution from \cite{lample2016neural}, using a Conditional Random Field to directly consider the dependencies between predicted labels.
+
+We show that using LSTMs, and especially bi-directional LSTMs yields superior performance. We also show that incorporating a CRF at prediction step does not contribute to a better quality of prediction. 
 \end{abstract}
 
 \section{Introduction}
@@ -180,12 +182,12 @@ and present the aggregated results in Fig \ref{config_compar}. We chose to conti
 
 \subsubsection{Dropout rate}
 
-The first learning parameter we looked at in details is the dropout rate. It gives the portion of a layer's neurons we want arbitrarily desactivated at each pass over the network, and it's designed to give the network more robustness (because the neurons "learn" to not depend too much on each other). We find that the best performances, with everything else fixed, are achieved with a dropout rate around 20\%, as shown in Fig \ref{dr_devf1} --- comparing learning curves --- and Fig \ref{dr_graph} --- comparing best performances.
+The first learning parameter we looked at in details is the dropout rate. It gives the portion of a layer's neurons we want arbitrarily desactivated at each pass over the network, and it is designed to give the network more robustness (because the neurons "learn" to not depend too much on each other). We find that the best performances, with everything else fixed, are achieved with a dropout rate around 20\%, as shown in Fig \ref{dr_devf1} --- comparing learning curves --- and Fig \ref{dr_graph} --- comparing best performances.
 
 \begin{figure}[h!!]
 \begin{center}
 \includegraphics[width=350px]{figs/dr_devf1.png}
-\caption{Learning curves for different dropout rates (dev set F1 score as a function of the number of epochs) ; we see that the most optimal dropout rate for learning is around 20\%}
+\caption{Learning curves for different dropout rates (dev set $F_1$ score as a function of the number of epochs) ; we see that the most optimal dropout rate for learning is around 20\%}
 \label{dr_devf1}
 \end{center}
 \end{figure}
@@ -210,7 +212,7 @@ We tried a rather wide grid of values for $\beta$, and could compare each one's 
 \begin{figure}[h!]
 \begin{center}
 \includegraphics[width=350px]{figs/l2_devf1.png}
-\caption{Learning curves for different $\beta$ values (dev set F1 score as a function of the number of epochs) ; we see that surprinsingly, few regularized models reach the out-of-sample performance of the unregularized baseline}
+\caption{Learning curves for different $\beta$ values (dev set $F_1$ score as a function of the number of epochs) ; we see that surprinsingly, few regularized models reach the out-of-sample performance of the unregularized baseline}
 \label{l2_devf1}
 \end{center}
 \end{figure}
@@ -225,16 +227,16 @@ We tried a rather wide grid of values for $\beta$, and could compare each one's 
 
 \subsection{Incorporating the CRF}
 
-We have tried to incorporate the prediction of a pre-trained CRF on top of two models: a simple LSTM model with $50$ recurrent cells, as well as our best-performing model, a Bidirectional LSTM. We have tried several values of the $\alpha$ parameter on an exponential scale, to see which one yields the best predicting performance. The $\alpha$ value which performs best on the train set is the one we will choose for evaluating our dev set.
+We have tried to incorporate the prediction of a pre-trained CRF on top of two models: a simple LSTM model with $50$ recurrent cells and an extra layer, as well as our best-performing model, a Bidirectional LSTM. We have tried several values of the $\alpha$ parameter on an exponential scale, to see which one yields the best predicting performance. The $\alpha$ value which performs best on the train set is the one we will choose for evaluating our dev set.
 
-We have summarized the results of varying the CRF's $\alpha$ parameter on a simple LSTM model in Fig \ref{lstm-crf-results}. First, we see that the dev $F_1$ performance curve closely follows the  train $F_1$ curve. This means that tuning the $\alpha$ parameter does not lead to an overfitting on specific subsets of the studied set. However, we obtain disappointing results on the contribution of the information of the CRF. The best results are obtained by not considering the CRF. Using more information from the CRF yields a steady decrease in $F_1$ performance.
+We have summarized the results of varying the CRF's $\alpha$ parameter on our flagship Bi-LSTM model in Fig \ref{lstm-crf-results}. First, we see that the dev $F_1$ performance curve closely follows the  train $F_1$ curve. This means that tuning the $\alpha$ parameter does not lead to an overfitting on specific subsets of the studied set. However, we obtain disappointing results on the contribution of the information of the CRF. The best results are obtained by not considering the CRF. Using more information from the CRF yields a steady decrease in $F_1$ performance.
 
-It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the Recurrent Network before being able to contribute in a constructive way.
+It appears that the way we included the CRF in our model is not relevant for prediction. The information carried by the labels transition matrix $P$ is not predictive enough, and it is over-expressed compared to the recurrent networks before being able to contribute in a constructive way.
 
 \begin{figure}[h!]
 \begin{center}
-\includegraphics[width=250px]{figs/LSTM-CRF-vs-alpha.png}
-\caption{Train and Dev set performance of a LSTM model, incorporating a CRF on the prediction step, versus the importance $\alpha$ given to the CRF. No positive level of importance yields superior performance. The best decision is not to use the extra information from the CRF. }
+\includegraphics[width=250px]{figs/BiLSTM-CRF-vs-alpha.png}
+\caption{Train and Dev set performance of a Bi-LSTM model, incorporating a CRF on the prediction step, versus the importance $\alpha$ given to the CRF. No positive level of importance yields superior performance. The best decision is not to use the extra information from the CRF. }
 \label{lstm-crf-results}
 \end{center}
 \end{figure}
@@ -263,13 +265,11 @@ We have produced the following table to summarize our main results for each atte
 \end{tabular}
 \end{center}
 
-TODO
+Overall, we see that it is highly relevant for a NER task to incorporate context information using recurrent networks. Our best-performing model is the Bi-LSTM, which means that future information is also crucial when labelling named entities.
 
-Opening :
+We chose to use a simplified version of \cite{lample2016neural} to use the information of a Conditional Random Field on the set of labels. We have shown that the way we implemented prediction algorithm using both a Neural Network and a CRF is not relevant when labelling.
 
-- to enhance CRF, bidirectional CRF? Incorporating CRF on training?
-
-- mention attention ?
+The next leads we are currently following to extend and enhance our models are using an attention layer on our recurrent network, as well as using CRFs in a smarter way, such as at training step, or using a bidirectional CRF.
 
 
 \newpage
