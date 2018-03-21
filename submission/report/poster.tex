@@ -134,7 +134,7 @@ Labelled new articles:
 \begin{tabbing}
 of \=Britain\='s \=ruling \=Labor \=Party \= \ \=in \=the \=southern \\
 
-\texttt{0} \>\texttt{B-geo} \>\texttt{0} \>\texttt{0} \>\texttt{B-org} \>\texttt{I-org} \> \>\texttt{0} \>\texttt{0} \>\texttt{0} 
+\texttt{0} \>\texttt{B-geo} \>\texttt{0} \>\texttt{0} \>\texttt{B-org} \>\texttt{I-org} \> \>\texttt{0} \>\texttt{0} \>\texttt{0}
 \end{tabbing}
 
 \vspace{5mm}
@@ -327,7 +327,7 @@ Surprisingly, no regularized model significantly beats the baseline in terms of 
 
   \begin{figure}
   \begin{center}
-  \includegraphics[width=600px]{figs/LSTM-CRF-vs-alpha.png}
+  \includegraphics[width=600px]{figs/LSTM-CRF-vs-alpha-extralayer.png}
   \caption{Train and Dev set performance of a LSTM model, incorporating a CRF on the prediction step, versus the importance $\alpha$ given to the CRF. No positive level of importance yields superior performance. The best decision is not to use the extra information from the CRF. }
   \label{lstm-crf-results}
   \end{center}
