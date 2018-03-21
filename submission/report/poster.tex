@@ -25,7 +25,6 @@
 \documentclass[final]{beamer}
 
 \usepackage[scale=0.8]{beamerposter} % Use the beamerposter package for laying out the poster
-\usepackage{cgloss4e}
 
 \usetheme{confposter} % Use the confposter theme supplied with this template
 
@@ -122,23 +121,38 @@
 \begin{block}{Dataset: CoNLL-2002}
 
 Labelled new articles:
+The,DT,O
+protest,NN,O
+comes,VBZ,O
+on,IN,O
+the,DT,O
+eve,NN,O
+of,IN,O
+the,DT,O
+annual,JJ,O
+conference,NN,O
+of,IN,O
+Britain,NNP,B-geo
+'s,POS,O
+ruling,VBG,O
+Labor,NNP,B-org
+Party,NNP,I-org
+in,IN,O
+the,DT,O
+southern,JJ,O
+English,JJ,B-gpe
+seaside,NN,O
+resort,NN,O
+of,IN,O
+Brighton,NNP,B-geo
 
-\begin{tabbing}
-``\=The \=protest \=comes \=on \=the \=eve \=of \=the \=annual \=conference \\
-\>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0 \>0
-\end{tabbing}
+The protest comes on the eve of the annual conference
 
-\begin{tabbing}
-of \=Britain\='s \=ruling \=Labor \=Party \=in \=the \=southern \\
+0 0 0 0 0 0 0 0 0 0 
 
-0 \>B-geo \>0 \>0 \>B-org \>I-org \>0 \>0 \>0
-\end{tabbing}
+of Britain's ruling Labor Party in the southern English seaside resort of Brighton.
 
-\begin{tabbing}
-English \=seaside \=resort \=of \=Brighton. `` \\
-
-B-gpe \>0 \>0 \>0 \>B-geo
-\end{tabbing}
+0 B-geo 0 0 B-org I-org 0 0 0 B-gpe 0 0 0 B-geo
 \end{block}
 
 %------------------------------------------------
@@ -149,6 +163,10 @@ For each of the studied articles, we considered daily recordings of traffic data
 \vspace{5mm}
 
 Each of these 6400 time series has a structure made of calm periods and surge moments. We see that several kinds of articles lie on way different levels of magnitude. We will have to take these issues into consideration when comparing them.
+
+\begin{center}
+%  \includegraphics[scale=0.6]{time_series}
+\end{center}
 
 \end{block}
 
@@ -183,7 +201,9 @@ Each of these 6400 time series has a structure made of calm periods and surge mo
 
   $$d_{surge}(i, j) = ||S_{i, surge} - S_{j, surge}||_2$$
 
-
+  \begin{center}
+%    \includegraphics[scale=0.6]{surge_example}
+  \end{center}
 \end{itemize}
 
 \end{block}
@@ -198,7 +218,12 @@ Each of these 6400 time series has a structure made of calm periods and surge mo
 %	METHODS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Edge existence separation}
+\begin{block}{Dropout rate study}
+\begin{center}
+  \includegraphics[scale=0.5]{figs/dr_graph.png}
+\end{center}
+
+Lorem ipsum
 
 
 \end{block}
@@ -213,11 +238,11 @@ Each of these 6400 time series has a structure made of calm periods and surge mo
 % %	IMPORTANT RESULT
 % %----------------------------------------------------------------------------------------
 
-% \begin{alertblock}{Important Result}
-
-% Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit.
-
-% \end{alertblock}
+%\begin{alertblock}{Important Result}
+%
+%Lorem ipsum dolor \textbf{sit amet}, consectetur adipiscing elit. Sed commodo molestie porta. Sed ultrices scelerisque sapien ac commodo. Donec ut volutpat elit.
+%
+%\end{alertblock}
 
 %----------------------------------------------------------------------------------------
 
@@ -254,35 +279,13 @@ One of the main challenges is facing class unbalance: indeed, the Wikipedia grap
 %	RESULTS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Learning results}
+\begin{block}{L2 regularization study}
 
-  \begin{itemize}
-    \item Gaussian Naive Bayes classification
-    \begin{center}
-    \begin{tabular}{|l||c|c|}
-        \hline
-        Result  & Predicted+ & Predicted- \\
-        \hline
-        Edge & 7,447,798 & 8,642 \\
-        Non-edge & 33,201 & 579 \\
-        \hline
-    \end{tabular}
-    \end{center}
+\begin{center}
+\includegraphics[scale=0.5]{figs/l2_graph.png}
+\end{center}
 
-      $F$-score: 2,76\%
-    \item Random Forest classification
-    \begin{center}
-    \begin{tabular}{|l||c|c|}
-        \hline
-        Result  & Predicted+ & Predicted- \\
-        \hline
-        Edge & 7,481,046 & 5,880 \\
-        Non-edge & 113 & 3,341 \\
-        \hline
-    \end{tabular}
-    \end{center}
-      $F$-score: 52,72\%
-  \end{itemize}
+Lorem ipsum
 
 \end{block}
 
@@ -345,7 +348,7 @@ One of the main challenges is facing class unbalance: indeed, the Wikipedia grap
 
 
 \begin{center}
-    \includegraphics[scale=0.5]{Stanford_logo}
+%    \includegraphics[scale=0.5]{Stanford_logo}
 \end{center}
 \end{block}
 
