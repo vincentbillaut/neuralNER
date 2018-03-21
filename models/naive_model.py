@@ -52,6 +52,7 @@ class NaiveModel(NERModel):
         labels_placeholder: Labels placeholder tensor of shape (None, 1), type tf.int32
         dropout_placeholder: Dropout rate placeholder, scalar, type float32
         """
+        super().add_placeholders()
         self.input_placeholder = tf.placeholder(tf.int32, (None, ))
         self.labels_placeholder = tf.placeholder(
             tf.int32, None)
